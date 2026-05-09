@@ -6,6 +6,7 @@ import { materialsRouter } from "./routes/materials.routes.js";
 import { onboardingRouter } from "./routes/onboarding.routes.js";
 import { authRouter } from "./routes/auth.routes.js";
 import { planRouter } from "./routes/plan.routes.js";
+import { reviewRouter } from "./routes/review.routes.js";
 import { optionalAuth } from "./middleware/auth.middleware.js";
 
 export function createApp() {
@@ -28,6 +29,7 @@ export function createApp() {
   app.use("/materials", materialsRouter);
   app.use("/onboarding", optionalAuth, onboardingRouter);
   app.use("/plan", planRouter);
+  app.use("/reviews", reviewRouter);
 
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
     console.error("Global Error:", err);

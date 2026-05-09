@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./index.css";
 
 const API_URL = "http://localhost:3000";
@@ -14,6 +14,8 @@ const FORMAT_BADGE = {
   exercise: "bg-primary",
 };
 
+const reviewRouteFor = (type) => (type === "video" ? "/videoreview" : "/textreview");
+
 function loadCachedPlan() {
   try {
     const raw = localStorage.getItem("currentPlan");
@@ -23,47 +25,69 @@ function loadCachedPlan() {
   }
 }
 
-const TaskCard = ({ task }) => (
-  <div className="card mb-2 shadow-sm" style={{ borderRadius: "12px" }}>
-    <div className="card-body py-2 px-3">
-      <div className="d-flex justify-content-between align-items-start gap-2">
-        <h6 className="mb-1 fw-semibold">{task.title}</h6>
-        <span className={`badge ${FORMAT_BADGE[task.format] ?? "bg-dark"} flex-shrink-0`}>
-          {task.format}
-        </span>
-      </div>
-      {task.source && <div className="small text-muted mb-1">{task.source}</div>}
-      <div className="small mb-1">{task.description}</div>
-      <div className="small text-muted fst-italic">{task.why_this}</div>
-      <div className="d-flex justify-content-between align-items-center mt-2">
-        <span className="small text-muted">~{task.estimated_time_minutes} min</span>
-        {task.url && (
-          <a href={task.url} target="_blank" rel="noreferrer" className="small">
-            open ↗
-          </a>
-        )}
+const TaskCard = ({ task, planId, taskIndex }) => {
+  const navigate = useNavigate();
+  const handleReview = () => {
+    navigate(reviewRouteFor(task.format), {
+      state: {
+        material: {
+          key: `task-${task.day}-${taskIndex}`,
+          title: task.title,
+          type: task.format,
+          url: task.url ?? null,
+          source: task.source ?? null,
+          planId: planId ?? null,
+        },
+      },
+    });
+  };
+
+  return (
+    <div className="card mb-2 shadow-sm" style={{ borderRadius: "12px" }}>
+      <div className="card-body py-2 px-3">
+        <div className="d-flex justify-content-between align-items-start gap-2">
+          <h6 className="mb-1 fw-semibold">{task.title}</h6>
+          <span className={`badge ${FORMAT_BADGE[task.format] ?? "bg-dark"} flex-shrink-0`}>
+            {task.format}
+          </span>
+        </div>
+        {task.source && <div className="small text-muted mb-1">{task.source}</div>}
+        <div className="small mb-1">{task.description}</div>
+        <div className="small text-muted fst-italic">{task.why_this}</div>
+        <div className="d-flex justify-content-between align-items-center mt-2">
+          <span className="small text-muted">~{task.estimated_time_minutes} min</span>
+          <div className="d-flex gap-2">
+            {task.url && (
+              <a href={task.url} target="_blank" rel="noreferrer" className="small">
+                open ↗
+              </a>
+            )}
+            <button
+              type="button"
+              onClick={handleReview}
+              className="btn btn-link p-0 small"
+            >
+              review
+            </button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
-const DayBlock = ({ day, tasks }) => (
+const DayBlock = ({ day, tasks, planId }) => (
   <div className="mb-3">
     <h5 className="fw-bold mb-2">Day {day}</h5>
     {tasks.map((t, i) => (
-      <TaskCard key={`${t.title}-${i}`} task={t} />
+      <TaskCard key={`${t.title}-${i}`} task={t} planId={planId} taskIndex={i} />
     ))}
   </div>
 );
 
-const VideoCard = ({ v }) => (
-  <a
-    href={v.embedUrl}
-    target="_blank"
-    rel="noreferrer"
-    className="text-decoration-none text-reset"
-  >
-    <div className="card shadow-sm h-100" style={{ borderRadius: "12px" }}>
+const VideoCard = ({ v, onReview }) => (
+  <div className="card shadow-sm h-100" style={{ borderRadius: "12px" }}>
+    <a href={v.embedUrl} target="_blank" rel="noreferrer">
       {v.thumbnail && (
         <img
           src={v.thumbnail}
@@ -72,32 +96,44 @@ const VideoCard = ({ v }) => (
           style={{ borderTopLeftRadius: "12px", borderTopRightRadius: "12px" }}
         />
       )}
-      <div className="card-body py-2 px-3">
-        <div className="small fw-semibold">{v.title}</div>
-      </div>
+    </a>
+    <div className="card-body py-2 px-3 d-flex justify-content-between align-items-start gap-2">
+      <div className="small fw-semibold">{v.title}</div>
+      <button type="button" onClick={onReview} className="btn btn-link p-0 small flex-shrink-0">
+        review
+      </button>
     </div>
-  </a>
+  </div>
 );
 
-const SimpleListItem = ({ title, subtitle, href }) => {
-  const content = (
-    <div className="card mb-2 shadow-sm" style={{ borderRadius: "12px" }}>
-      <div className="card-body py-2 px-3">
-        <div className="fw-semibold small">{title}</div>
-        {subtitle && <div className="small text-muted">{subtitle}</div>}
+const SimpleListItem = ({ title, subtitle, href, onReview }) => (
+  <div className="card mb-2 shadow-sm" style={{ borderRadius: "12px" }}>
+    <div className="card-body py-2 px-3">
+      <div className="d-flex justify-content-between align-items-start gap-2">
+        <div className="flex-grow-1">
+          {href ? (
+            <a href={href} target="_blank" rel="noreferrer" className="text-decoration-none text-reset">
+              <div className="fw-semibold small">{title}</div>
+              {subtitle && <div className="small text-muted">{subtitle}</div>}
+            </a>
+          ) : (
+            <>
+              <div className="fw-semibold small">{title}</div>
+              {subtitle && <div className="small text-muted">{subtitle}</div>}
+            </>
+          )}
+        </div>
+        <button type="button" onClick={onReview} className="btn btn-link p-0 small flex-shrink-0">
+          review
+        </button>
       </div>
     </div>
-  );
-  if (!href) return content;
-  return (
-    <a href={href} target="_blank" rel="noreferrer" className="text-decoration-none text-reset">
-      {content}
-    </a>
-  );
-};
+  </div>
+);
 
 const PlanView = () => {
   const location = useLocation();
+  const navigateRouter = useNavigate();
   const [data, setData] = useState(() => location.state?.plan ?? loadCachedPlan());
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState("");
@@ -176,7 +212,9 @@ const PlanView = () => {
     );
   }
 
-  const { validation, plan, materials } = data;
+  const { validation, plan, materials, planId } = data;
+  const goReview = (route, material) =>
+    navigateRouter(route, { state: { material: { ...material, planId: planId ?? null } } });
 
   if (!validation?.accepted || !plan) {
     return (
@@ -209,7 +247,7 @@ const PlanView = () => {
             .map(Number)
             .sort((a, b) => a - b)
             .map((day) => (
-              <DayBlock key={day} day={day} tasks={tasksByDay[day]} />
+              <DayBlock key={day} day={day} tasks={tasksByDay[day]} planId={planId} />
             ))}
 
           <Link to="/learningform" className="btn btn-outline-secondary mt-2">
@@ -225,9 +263,20 @@ const PlanView = () => {
               <>
                 <h6 className="text-muted text-uppercase small mt-2">Videos</h6>
                 <div className="row g-2">
-                  {materials.videos.map((v) => (
+                  {materials.videos.map((v, i) => (
                     <div key={v.videoId} className="col-12">
-                      <VideoCard v={v} />
+                      <VideoCard
+                        v={v}
+                        onReview={() =>
+                          goReview("/videoreview", {
+                            key: `video-${i}`,
+                            title: v.title,
+                            type: "video",
+                            url: v.embedUrl ?? null,
+                            source: "YouTube",
+                          })
+                        }
+                      />
                     </div>
                   ))}
                 </div>
@@ -243,6 +292,15 @@ const PlanView = () => {
                     title={b.title}
                     subtitle={b.author}
                     href={b.readUrl}
+                    onReview={() =>
+                      goReview("/textreview", {
+                        key: `book-${i}`,
+                        title: b.title,
+                        type: "book",
+                        url: b.readUrl ?? null,
+                        source: b.author ?? "Project Gutenberg",
+                      })
+                    }
                   />
                 ))}
               </>
@@ -257,6 +315,15 @@ const PlanView = () => {
                     title={p.title}
                     subtitle={`${p.author}${p.year ? ` · ${p.year}` : ""}`}
                     href={p.pdfUrl}
+                    onReview={() =>
+                      goReview("/textreview", {
+                        key: `paper-${i}`,
+                        title: p.title,
+                        type: "article",
+                        url: p.pdfUrl ?? null,
+                        source: `${p.author}${p.year ? ` · ${p.year}` : ""}`,
+                      })
+                    }
                   />
                 ))}
               </>
