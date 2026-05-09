@@ -1,8 +1,13 @@
+import {Link} from "react-router-dom";
+
 const Learning = () => {
     return (
         <div style={{ padding: '20px' }}>
-            <h1>Start learning</h1>
+            <div className="start-learning">
+                <p> <Link to="/learningform">Set up your learning plan here</Link></p>
+            </div>
         </div>
+
     );
 };
 
