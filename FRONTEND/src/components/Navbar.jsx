@@ -25,7 +25,6 @@ const Navbar = () => {
                     <span className="navbar-toggler-icon"></span>
                 </button>
 
-                {/* Navbar */}
                 <div className="collapse navbar-collapse" id="navbarNav">
                     <ul className="navbar-nav mx-auto gap-3">
                         <li className="nav-item">
@@ -36,7 +35,6 @@ const Navbar = () => {
                         </li>
                     </ul>
 
-                    {/* Przyciski po prawej */}
                     <div className="d-flex gap-2 ms-auto">
                         {isLoggedIn ? (
                             <Link to="/myprofile" className="btn purple-btn btn-lg px-4">
