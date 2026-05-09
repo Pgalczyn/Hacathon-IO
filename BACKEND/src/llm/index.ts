@@ -53,4 +53,3 @@ export {
   type OnboardingInput,
   type ProficiencyLevelValue,
 } from "./schemas.js";
-export { generateWeeklyPlan, type GeneratePlanOptions } from "./learningPlan.js";
