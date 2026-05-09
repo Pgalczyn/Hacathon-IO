@@ -5,7 +5,8 @@ import "./index.css";
 const LearningForm = () => {
   const [formData, setFormData] = useState({
     goal: "",
-    timeSpent: "",
+    level: "",
+    timeSpent: 0,
     methods: [],
     connectWithOthers: false,
   });
@@ -36,94 +37,123 @@ const LearningForm = () => {
     if (formData.goal.length < 20) {
       alert("Goal description must be at least 20 characters long!");
       return;
+    } else if (formData.goal.length > 1000) {
+      alert("Goal description must be maximum 1000 characters long!");
+      return;
     }
     console.log("Collected Data:", formData);
     alert("Form submitted! Check the console.");
   };
 
   return (
-    <div className="form-wrapper">
-      <form className="learning-form" onSubmit={handleSubmit}>
-        <h2 className="form-title">Learning Goals</h2>
+    <div className="d-flex justify-content-center align-items-center w-100 h-100 bg-light">
+      <div
+        className="card shadow-sm p-4 w-100"
+        style={{ maxWidth: "450px", borderRadius: "16px" }}
+      >
+        <h2 className="text-center mb-4 fw-bold">Learning Goals</h2>
 
-        {/* What do you want to learn? */}
-        <div className="form-section">
-          <label>What do you want to learn? (min. 20 chars)</label>
+        <form className="d-flex flex-column gap-3" onSubmit={handleSubmit}>
+          {/* What do you want to learn? */}
+          <label>What do you want to learn? (20-1000 char.)</label>
           <textarea
             name="goal"
             placeholder="e.g., I want to learn Python and build web applications"
             value={formData.goal}
             onChange={handleInputChange}
+            className="form-control"
             required
           />
-          <small>{formData.goal.length}/20 characters</small>
-        </div>
+          <small>{formData.goal.length}/1000 characters</small>
 
-        {/* Time per day */}
-        <div className="form-section">
+          {/* What do you want to learn? */}
+          <label>Describe your current skill level</label>
+          <textarea
+            name="level"
+            placeholder="e.g., I only know print('Hello World') "
+            value={formData.level}
+            onChange={handleInputChange}
+            required
+            className="form-control"
+          />
+          <small>{formData.level.length}/1000 characters</small>
+
+          {/* Time per day */}
           <label>How much time can you dedicate daily?</label>
-          <div className="radio-group">
-            {["15-30 minutes", "30-60 minutes", "1-2 hours", "2+ hours"].map(
-              (time) => (
-                <label key={time} className="radio-label">
+          <input
+            type="range"
+            name="form-range"
+            className="form-range custom-range"
+            min="0"
+            max="3"
+            step="1"
+            value={formData.timeSpent}
+            onChange={(e) =>
+              setFormData({ ...formData, timeSpent: Number(e.target.value) })
+            }
+          />
+          <div className="text-center fw-semibold purple-text">
+            {
+              ["15-30 minutes", "30-60 minutes", "1-2 hours", "2+ hours"][
+                formData.timeSpent
+              ]
+            }
+          </div>
+
+          {/* Learning methods */}
+          <div className="form-section">
+            <label className="fw-semibold">Preferred learning methods:</label>
+
+            <div className="d-grid gap-2">
+              {methodsOptions.map((method) => (
+                <div key={method} className="form-check">
                   <input
-                    type="radio"
-                    name="timeSpent"
-                    value={time}
-                    checked={formData.timeSpent === time}
-                    onChange={handleInputChange}
-                    required
-                  />{" "}
-                  {time}
-                </label>
-              ),
-            )}
+                    className="form-check-input"
+                    type="checkbox"
+                    checked={formData.methods.includes(method)}
+                    onChange={() => handleCheckboxChange(method)}
+                    id={method}
+                  />
+                  <label className="form-check-label" htmlFor={method}>
+                    {method}
+                  </label>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Learning methods */}
-        <div className="form-section">
-          <label>Preferred learning methods:</label>
-          <div className="checkbox-grid">
-            {methodsOptions.map((method) => (
-              <label key={method} className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={formData.methods.includes(method)}
-                  onChange={() => handleCheckboxChange(method)}
-                />{" "}
-                {method}
+          {/* Connecting with others */}
+          <div className="form-section">
+            <div className="form-check">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                name="connectWithOthers"
+                checked={formData.connectWithOthers}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    connectWithOthers: e.target.checked,
+                  })
+                }
+                id="connectWithOthers"
+              />
+
+              <label className="form-check-label" htmlFor="connectWithOthers">
+                I want to connect with other participants
               </label>
-            ))}
+            </div>
           </div>
-        </div>
 
-        {/* Connecting with others */}
-        <div className="form-section">
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              name="connectWithOthers"
-              checked={formData.connectWithOthers}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  connectWithOthers: e.target.checked,
-                })
-              }
-            />{" "}
-            I want to connect with other participants
-          </label>
-        </div>
-
-        <button
-          type="submit"
-          className="submit-btn"
-          disabled={formData.goal.length < 20}
-        >
-          Save Settings
-        </button>
-      </form>
+          <button
+            type="submit"
+            className="btn purple-btn btn-lg px-4"
+            // disabled={formData.goal.length < 20}
+          >
+            Save Settings
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
