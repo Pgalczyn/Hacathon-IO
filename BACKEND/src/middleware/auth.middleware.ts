@@ -26,3 +26,20 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
     res.status(401).json({ message: "Invalid or expired token" });
   }
 }
+
+/**
+ * Sets req.user if a valid JWT cookie is present, but never blocks the
+ * request. Use on routes that work for both anonymous and signed-in users
+ * but want to associate work with the user when possible.
+ */
+export function optionalAuth(req: Request, _res: Response, next: NextFunction): void {
+  const token = req.cookies?.token as string | undefined;
+  if (token) {
+    try {
+      req.user = authService.verifyToken(token);
+    } catch {
+      // ignore — treat as anonymous
+    }
+  }
+  next();
+}

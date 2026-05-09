@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import "./index.css";
 
+const API_URL = "http://localhost:3000";
+
 const FORMAT_BADGE = {
   video: "bg-danger",
   article: "bg-info",
@@ -97,11 +99,50 @@ const SimpleListItem = ({ title, subtitle, href }) => {
 const PlanView = () => {
   const location = useLocation();
   const [data, setData] = useState(() => location.state?.plan ?? loadCachedPlan());
+  const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState("");
 
   useEffect(() => {
     if (location.state?.plan) {
       setData(location.state.plan);
+      return;
     }
+    if (data) return;
+
+    let cancelled = false;
+    setLoading(true);
+    fetch(`${API_URL}/plan`, { credentials: "include" })
+      .then(async (response) => {
+        if (cancelled) return;
+        if (response.ok) {
+          const json = await response.json();
+          setData(json);
+          try {
+            localStorage.setItem("currentPlan", JSON.stringify(json));
+          } catch {
+            // ignore
+          }
+          return;
+        }
+        if (response.status === 401 || response.status === 404) {
+          // anonymous or no plan yet — leave data null, render the empty state
+          return;
+        }
+        const json = await response.json().catch(() => ({}));
+        setFetchError(json.message ?? `Failed to load plan (${response.status})`);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setFetchError(err.message ?? "Network error");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
 
   const tasksByDay = useMemo(() => {
@@ -114,12 +155,21 @@ const PlanView = () => {
     }, {});
   }, [data]);
 
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center w-100 p-5 bg-light">
+        <div className="text-muted">Loading your plan…</div>
+      </div>
+    );
+  }
+
   if (!data) {
     return (
       <div className="d-flex justify-content-center align-items-center w-100 p-5 bg-light">
         <div className="card shadow-sm p-4 text-center" style={{ maxWidth: "420px", borderRadius: "16px" }}>
           <h4 className="mb-3">No plan yet</h4>
           <p className="text-muted">Fill out the learning form to generate your weekly plan.</p>
+          {fetchError && <div className="alert alert-warning small">{fetchError}</div>}
           <Link to="/learningform" className="btn purple-btn">Set up my plan</Link>
         </div>
       </div>

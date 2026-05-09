@@ -5,6 +5,8 @@ import cookieParser from "cookie-parser";
 import { materialsRouter } from "./routes/materials.routes.js";
 import { onboardingRouter } from "./routes/onboarding.routes.js";
 import { authRouter } from "./routes/auth.routes.js";
+import { planRouter } from "./routes/plan.routes.js";
+import { optionalAuth } from "./middleware/auth.middleware.js";
 
 export function createApp() {
   const app = express();
@@ -24,7 +26,8 @@ export function createApp() {
 
   app.use(authRouter);
   app.use("/materials", materialsRouter);
-  app.use("/onboarding", onboardingRouter);
+  app.use("/onboarding", optionalAuth, onboardingRouter);
+  app.use("/plan", planRouter);
 
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
     console.error("Global Error:", err);

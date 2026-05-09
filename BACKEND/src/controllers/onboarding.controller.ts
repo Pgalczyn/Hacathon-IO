@@ -13,7 +13,8 @@ export class OnboardingController {
       return;
     }
 
-    const result = await onboardingService.run(parsed.data);
+    const userId = req.user?.userID;
+    const result = await onboardingService.run(parsed.data, userId ? { userId } : {});
     const status = result.validation.accepted ? 200 : 422;
     res.status(status).json(result);
   };
