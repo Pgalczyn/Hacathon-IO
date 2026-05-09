@@ -6,7 +6,7 @@ This is a hackathon project.
 
 ## How it works
 
-1. **Sign up & onboarding.** You answer a short form: what you want to learn, how much time per day you have, your preferred formats, and whether you want to connect with other learners.
+1. **Sign up & onboarding.** You answer a short form: what you want to learn, your current proficiency level, how much time per day you have, your preferred formats, and whether you want to connect with other learners.
 2. **Goal validation.** The LLM checks the goal makes sense as a learning topic and rejects illegal, harmful, manipulative, frivolous (stunts/pranks), or too-vague goals.
 3. **Plan generation.** If the goal is accepted, the LLM produces a 7-day plan. Each task has a day, format, title, source/creator, an estimated duration, a description, and a reason it fits you.
 4. **Per-task feedback.** After every material the user rates it (1–5), says whether it was helpful, and how the difficulty felt. This drives future recommendations.
@@ -98,6 +98,7 @@ const reply = await invokeLLM("Say pong.", { system: "You are terse." });
 // structured plan generation
 const result = await generateWeeklyPlan({
   goalText: "I want to learn Python and build a small web app.",
+  currentLevel: "beginner", // complete_beginner | beginner | intermediate | advanced
   dailyMinutes: 60,
   preferredFormats: ["video", "article", "course"],
   wantsCommunity: true,

@@ -80,11 +80,21 @@ export const PreferredFormat = z.enum([
   "community",
 ]);
 
+export const ProficiencyLevel = z.enum([
+  "complete_beginner",
+  "beginner",
+  "intermediate",
+  "advanced",
+]);
+
+export type ProficiencyLevelValue = z.infer<typeof ProficiencyLevel>;
+
 export const OnboardingInputSchema = z.object({
   goalText: z.string().min(20),
   dailyMinutes: z.number().int().positive(),
   preferredFormats: z.array(PreferredFormat).min(1),
   wantsCommunity: z.boolean(),
+  currentLevel: ProficiencyLevel,
 });
 
 export type OnboardingInput = z.infer<typeof OnboardingInputSchema>;
