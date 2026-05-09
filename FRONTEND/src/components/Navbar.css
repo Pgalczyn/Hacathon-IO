@@ -1,40 +1,31 @@
-.navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 2rem;
-    background-color: #333;
-    color: white;
+.purple-btn {
+  background-color: #d1aaff !important;
+  /* border: 1px solid #9944fc !important; */
+  color: #0f1364 !important;
+  font-weight: 600;
+  transition: all 0.2s ease;
 }
 
-.nav-links {
-    display: flex;
-    list-style: none;
-    align-items: center;
+.purple-btn:hover {
+  background-color: #9944fc !important;
+  border-color: #9944fc !important;
+  color: #ffffff !important;
 }
 
-.nav-links li {
-    margin-left: 20px;
+.purple-outline-btn {
+  background-color: transparent;
+  border: 1px solid #9f46ed;
+  color: #9f46ed !important;
 }
 
-.nav-links a {
-    color: white;
-    text-decoration: none;
-    font-weight: 500;
+.purple-outline-btn:hover {
+  background-color: #9f46ed !important;
+  color: #0f1364 !important;
 }
 
-.auth-buttons {
-    display: flex;
-    gap: 10px;
-    margin-left: 40px;
+.purple-text {
+  color: #9f46ed !important;
 }
-
-.register-btn {
-    background-color: #007bff;
-    padding: 8px 16px;
-    border-radius: 4px;
-}
-
-.register-btn:hover {
-    background-color: #0056b3;
+body {
+  font-family: "Poppins", sans-serif !important;
 }
