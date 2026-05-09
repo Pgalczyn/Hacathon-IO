@@ -1,6 +1,7 @@
 // src/app.ts
 import express, { type NextFunction, type Request, type Response } from "express";
 import { materialsRouter } from "./routes/materials.routes.js";
+import { onboardingRouter } from "./routes/onboarding.routes.js";
 
 export function createApp() {
   const app = express();
@@ -13,6 +14,7 @@ export function createApp() {
   });
 
   app.use("/materials", materialsRouter);
+  app.use("/onboarding", onboardingRouter);
 
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
     console.error("Global Error:", err);
