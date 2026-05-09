@@ -29,7 +29,7 @@ app.post("/addUser", async (req, res) => {
 
 async function startServer() {
     try {
-        await connectDatabase(); // Czekamy na bazę
+        // await connectDatabase(); // Czekamy na bazę
 
         app.listen(PORT, () => {
             console.log(`✅ Serwer działa na porcie ${PORT}`);
