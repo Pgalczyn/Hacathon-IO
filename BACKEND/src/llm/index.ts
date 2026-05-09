@@ -38,3 +38,17 @@ export async function* streamLLM(
 export { createLLM } from "./provider.js";
 export type { LLMConfig, LLMProvider } from "./provider.js";
 export { invokeStructured, ExampleSchema, type ExampleOutput, type StructuredOptions } from "./structured.js";
+export {
+  PlanResponseSchema,
+  PlanSchema,
+  LearningTaskSchema,
+  OnboardingInputSchema,
+  TaskFormat,
+  PreferredFormat,
+  RejectionCategory,
+  type PlanResponse,
+  type Plan,
+  type LearningTask,
+  type OnboardingInput,
+} from "./schemas.js";
+export { generateWeeklyPlan, type GeneratePlanOptions } from "./learningPlan.js";
