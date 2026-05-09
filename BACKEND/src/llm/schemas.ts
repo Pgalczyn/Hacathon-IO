@@ -50,7 +50,13 @@ export const PlanSchema = z.object({
     .string()
     .describe("What the user will achieve by end of this week."),
   daily_time_minutes: z.number().int().positive(),
-  tasks: z.array(LearningTaskSchema).min(3).max(14),
+  tasks: z
+    .array(LearningTaskSchema)
+    .min(1)
+    .max(21)
+    .describe(
+      "When accepted, ideally 7-14 tasks covering all 7 days. Each day gets at least one task.",
+    ),
 });
 
 export const PlanResponseSchema = z.object({
@@ -64,12 +70,28 @@ export const PlanResponseSchema = z.object({
       ),
     rejection_category: RejectionCategory.nullable(),
   }),
-  plan: PlanSchema.nullable(),
+  // `plan` is always present in the LLM response (some tool-calling
+  // backends like Groq misrender nullable/union schemas). When the
+  // goal is rejected, the LLM still returns a placeholder plan and
+  // the backend service zeros it out to null before responding.
+  plan: PlanSchema,
 });
 
 export type LearningTask = z.infer<typeof LearningTaskSchema>;
 export type Plan = z.infer<typeof PlanSchema>;
-export type PlanResponse = z.infer<typeof PlanResponseSchema>;
+
+// Internal: shape returned by the LLM (plan is always present because
+// Groq tool-calling chokes on nullable / union schemas).
+export type LlmPlanResponse = z.infer<typeof PlanResponseSchema>;
+
+// Public: what callers actually consume — plan is null when the goal was
+// rejected. The LLM wrapper (generateWeeklyPlan) is responsible for
+// translating LlmPlanResponse → PlanResponse by zeroing out plan when
+// validation.accepted === false.
+export type PlanResponse = {
+  validation: LlmPlanResponse["validation"];
+  plan: Plan | null;
+};
 
 export const PreferredFormat = z.enum([
   "video",

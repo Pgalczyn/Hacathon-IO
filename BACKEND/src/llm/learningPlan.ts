@@ -6,6 +6,11 @@ import {
   type PlanResponse,
 } from "./schemas.js";
 
+// `community` is a communication preference, not a material format,
+// so it never reaches the LLM as a "preferredFormat" — otherwise the
+// model picks "community" as a task.format which isn't a valid value.
+const MATERIAL_FORMATS_FROM_PREFERENCE = ["video", "article", "book", "course", "podcast"] as const;
+
 const SYSTEM_PROMPT = `You are the planning brain of a self-learning app. You receive a user's
 learning goal and preferences, and you return a single structured JSON
 object that does TWO things:
@@ -56,7 +61,10 @@ PART 2 — PLAN GENERATION (only if accepted)
 ==========================================================
 
 Constraints:
-- Exactly 7 days (day 1 through day 7).
+- The plan MUST cover all 7 days. Each day from 1 to 7 must have at
+  least one task (use the "day" field). 7 to 14 tasks total is a good
+  range; never fewer than 7 unless the user's daily time is so small
+  that two days share one task.
 - Total daily time across tasks for a given day MUST fit the user's
   daily time budget. Some days can be lighter or have a single longer
   task.
@@ -121,14 +129,25 @@ export async function generateWeeklyPlan(
   input: OnboardingInput,
   options: GeneratePlanOptions = {},
 ): Promise<PlanResponse> {
+  // Strip `community` — it's a community/contact preference, not a task
+  // format. If it leaks through, the LLM picks "community" as task.format
+  // which is not a valid TaskFormat value.
+  const materialFormats = input.preferredFormats.filter(
+    (f): f is (typeof MATERIAL_FORMATS_FROM_PREFERENCE)[number] =>
+      (MATERIAL_FORMATS_FROM_PREFERENCE as readonly string[]).includes(f),
+  );
+  const formatsForPrompt = materialFormats.length > 0 ? materialFormats : ["video", "article"];
+
   const sections: string[] = [
     `USER LEARNING GOAL:`,
     input.goalText,
     ``,
     `CURRENT_LEVEL: ${input.currentLevel}`,
     `DAILY TIME BUDGET: ${input.dailyMinutes} minutes`,
-    `PREFERRED FORMATS: ${input.preferredFormats.join(", ")}`,
+    `PREFERRED MATERIAL FORMATS (use ONLY these for task.format): ${formatsForPrompt.join(", ")}`,
     `WANTS TO CONNECT WITH OTHERS: ${input.wantsCommunity ? "yes" : "no"}`,
+    ``,
+    `TASK FORMAT CONSTRAINT: every task.format MUST be exactly one of: video, article, book, course, podcast, interview, exercise. Never use "community" — that's a contact preference, not a material format.`,
   ];
 
   if (options.learnerContext && options.learnerContext.trim().length > 0) {
@@ -137,9 +156,18 @@ export async function generateWeeklyPlan(
 
   const { learnerContext: _ignore, ...llmOptions } = options;
 
-  return invokeStructured(sections.join("\n"), PlanResponseSchema, {
+  const result = await invokeStructured(sections.join("\n"), PlanResponseSchema, {
     system: SYSTEM_PROMPT,
     temperature: llmOptions.temperature ?? 0.4,
     ...llmOptions,
   });
+
+  // Schema now requires `plan` to be present (Groq tool-calling chokes on
+  // nullable/union outputs). When the goal is rejected the LLM still emits
+  // a placeholder plan — drop it here so the response shape stays
+  // `{ accepted: false, plan: null }` for callers and the frontend.
+  if (!result.validation.accepted) {
+    return { ...result, plan: null };
+  }
+  return result;
 }
