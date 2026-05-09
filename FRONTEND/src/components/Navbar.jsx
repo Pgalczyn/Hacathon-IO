@@ -16,14 +16,23 @@ const Navbar = () => {
             src={logo_head}
             alt="Logo Head"
             height="70"
-            className="m-0 p-0"
+            className="m-0 p-0 d-lg-none"
           />
-          <img
-            src={logo_napis}
-            alt="Logo Napis"
-            height="50"
-            className="m-0 p-0"
-          />
+
+          <div className="d-none d-lg-flex align-items-center gap-2">
+            <img
+              src={logo_head}
+              alt="Logo Head"
+              height="70"
+              className="m-0 p-0"
+            />
+            <img
+              src={logo_napis}
+              alt="Logo Napis"
+              height="50"
+              className="m-0 p-0"
+            />
+          </div>
         </Link>
 
         <button
@@ -56,12 +65,18 @@ const Navbar = () => {
               </Link>
             ) : (
               <>
-                <Link to="/login" className="btn purple-btn btn-lg px-4">
-                  Login
-                </Link>
-                <Link to="/register" className="btn purple-btn btn-lg px-4">
-                  Register
-                </Link>
+                <ul className="navbar-nav gap-2">
+                  <li className="nav-item">
+                    <Link to="/login" className="btn purple-btn btn-lg px-4">
+                      Login
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link to="/register" className="btn purple-btn btn-lg px-4">
+                      Register
+                    </Link>
+                  </li>
+                </ul>
               </>
             )}
           </div>
