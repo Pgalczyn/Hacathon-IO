@@ -4,7 +4,7 @@ import "./index.css";
 const Learning = () => {
   return (
     <div style={{ padding: "20px" }}>
-      <div className="start-learning">
+      <div className="auth-link">
         <p>
           {" "}
           <Link to="/learningform">Set up your learning plan here</Link>

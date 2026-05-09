@@ -6,10 +6,16 @@ const LearningForm = () => {
   const [formData, setFormData] = useState({
     goal: "",
     level: "",
-    timeSpent: 0,
-    methods: [],
+    timeSpent: "",
+    methods: "",
     connectWithOthers: false,
   });
+  const timeOptions = [
+    "15-30 minutes",
+    "30-60 minutes",
+    "1-2 hours",
+    "2+ hours",
+  ];
 
   const methodsOptions = [
     "Videos/YouTube",
@@ -87,17 +93,20 @@ const LearningForm = () => {
             min="0"
             max="3"
             step="1"
-            value={formData.timeSpent}
+            value={timeOptions.indexOf(formData.timeSpent)}
             onChange={(e) =>
-              setFormData({ ...formData, timeSpent: Number(e.target.value) })
+              setFormData({
+                ...formData,
+                timeSpent: timeOptions[e.target.value],
+              })
             }
+            // value={formData.timeSpent}
+            // onChange={(e) =>
+            //   setFormData({ ...formData, timeSpent: e.target.value })
+            // }
           />
           <div className="text-center fw-semibold purple-text">
-            {
-              ["15-30 minutes", "30-60 minutes", "1-2 hours", "2+ hours"][
-                formData.timeSpent
-              ]
-            }
+            {formData.timeSpent}
           </div>
 
           {/* Learning methods */}
