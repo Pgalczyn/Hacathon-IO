@@ -1,6 +1,27 @@
 {
+  "name": "hacathon-io",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch BACKEND/server.ts",
+    "start": "tsx BACKEND/server.ts"
+  },
   "dependencies": {
+
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongoose": "^9.6.2"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.6.2",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+
     "bootstrap": "^5.3.8",
     "express": "^5.2.1"
+
   }
 }
