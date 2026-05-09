@@ -33,12 +33,10 @@ This is a hackathon project.
 │       │   ├── index.ts          # invokeLLM, streamLLM, re-exports
 │       │   ├── structured.ts     # invokeStructured (Zod-validated JSON)
 │       │   ├── schemas.ts        # PlanResponseSchema, OnboardingInputSchema
-│       │   ├── learningPlan.ts   # generateWeeklyPlan() — un-grounded
-│       │   └── learningPlanGrounded.ts # generateWeeklyPlanGrounded() — Tavily search
-│       ├── test-llm.ts          # smoke test for plain LLM call
-│       ├── test-structured.ts   # smoke test for structured output
-│       ├── test-plan.ts         # 7 sample goals against un-grounded planner
-│       └── test-plan-grounded.ts # 4 sample goals against grounded planner
+│       │   └── learningPlan.ts   # generateWeeklyPlan() + system prompt
+│       ├── test-llm.ts        # smoke test for plain LLM call
+│       ├── test-structured.ts # smoke test for structured output
+│       └── test-plan.ts       # 7 sample goals: 3 should accept, 4 should reject
 ├── FRONTEND/                  # Vite + React (work in progress)
 ├── package.json
 ├── tsconfig.json
@@ -52,7 +50,6 @@ This is a hackathon project.
 - An API key for one LLM provider:
   - **Groq** (default, free tier available — https://console.groq.com), or
   - **Anthropic** (https://console.anthropic.com)
-- A **Tavily API key** for the grounded plan generator that searches the live web — free tier: 1000 searches/month (https://app.tavily.com)
 
 ## Setup
 
@@ -66,10 +63,6 @@ cat > .env <<'EOF'
 GROQ_API_KEY=gsk_your_key_here
 # LLM_PROVIDER=anthropic
 # ANTHROPIC_API_KEY=sk-ant-...
-
-# required for grounded plan generation (web search)
-# 1000 free searches/month — https://app.tavily.com
-TAVILY_API_KEY=tvly-...
 
 # optional — falls back to localhost if unset
 MONGO_URI=mongodb://localhost:27017/HacathonDB
@@ -89,59 +82,35 @@ Server starts on **http://localhost:3000**.
 | `npm start` | Run server once with `tsx` |
 | `npx tsx BACKEND/src/test-llm.ts` | Smoke-test the LLM connection (expects "pong") |
 | `npx tsx BACKEND/src/test-structured.ts` | Smoke-test structured (Zod-validated) output |
-| `npx tsx BACKEND/src/test-plan.ts` | Run the (un-grounded) plan generator against 7 sample goals |
-| `npx tsx BACKEND/src/test-plan-grounded.ts` | Run the grounded plan generator (uses real web search) |
+| `npx tsx BACKEND/src/test-plan.ts` | Run the plan generator against 7 sample goals |
 | `npx tsc --noEmit` | Type-check the project |
 
 ## LLM module
 
-The LLM layer lives in [`BACKEND/src/llm/`](BACKEND/src/llm). Three things you can call:
+The LLM layer lives in [`BACKEND/src/llm/`](BACKEND/src/llm). Two ways to call it:
 
 ```ts
-import {
-  invokeLLM,
-  generateWeeklyPlan,
-  generateWeeklyPlanGrounded,
-} from "./BACKEND/src/llm/index.js";
+import { invokeLLM, generateWeeklyPlan } from "./BACKEND/src/llm/index.js";
 
-// 1. Freeform text in, text out
+// freeform text in, text out
 const reply = await invokeLLM("Say pong.", { system: "You are terse." });
 
-// 2. Plan generation from the LLM's training data only — fast, cheap,
-//    but resources may be hallucinated.
-const fast = await generateWeeklyPlan({
+// structured plan generation
+const result = await generateWeeklyPlan({
   goalText: "I want to learn Python and build a small web app.",
   dailyMinutes: 60,
   preferredFormats: ["video", "article", "course"],
   wantsCommunity: true,
 });
 
-// 3. Grounded plan generation — validates the goal, runs real web
-//    searches via Tavily, then builds the plan from real results only.
-const grounded = await generateWeeklyPlanGrounded({
-  goalText: "I want to learn Python and build a small web app.",
-  dailyMinutes: 60,
-  preferredFormats: ["video", "article", "course"],
-  wantsCommunity: true,
-});
-
-if (!grounded.validation.accepted) {
-  console.log("Rejected:", grounded.validation.rejection_category, grounded.validation.rejection_reason);
+if (!result.validation.accepted) {
+  console.log("Rejected:", result.validation.rejection_category, result.validation.rejection_reason);
 } else {
-  console.log("Plan:", grounded.plan);
+  console.log("Plan:", result.plan);
 }
 ```
 
-Both `generateWeeklyPlan` and `generateWeeklyPlanGrounded` return the same `PlanResponse` shape, so they are drop-in interchangeable. Pick based on whether you need real-world materials:
-
-| | `generateWeeklyPlan` | `generateWeeklyPlanGrounded` |
-|---|---|---|
-| Uses web search | no | **yes** (Tavily) |
-| Latency | ~1 LLM call | 2 LLM calls + parallel searches |
-| Cost | LLM tokens only | LLM tokens + Tavily quota |
-| Resource accuracy | may hallucinate | URLs/titles from real search results |
-
-All responses are validated against a Zod schema (`PlanResponse` in [`BACKEND/src/llm/schemas.ts`](BACKEND/src/llm/schemas.ts)) with one automatic retry on schema-mismatch.
+The plan response is fully type-safe (`PlanResponse` from [`BACKEND/src/llm/schemas.ts`](BACKEND/src/llm/schemas.ts)) and validated against a Zod schema, with one automatic retry on schema-mismatch.
 
 ### What gets rejected
 
@@ -168,8 +137,7 @@ Borderline goals (e.g. lockpicking as a hobby) are reframed and accepted.
 
 - [x] LLM provider abstraction (Groq / Anthropic)
 - [x] Structured-output helper (Zod-validated JSON)
-- [x] Goal validation + 7-day plan generator (un-grounded)
-- [x] Grounded plan generator with Tavily web search
+- [x] Goal validation + 7-day plan generator
 - [ ] `/onboarding` endpoint
 - [ ] Mongo models for plans, tasks, ratings
 - [ ] Per-task feedback endpoint and recommendation filter

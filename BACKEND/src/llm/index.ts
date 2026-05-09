@@ -52,7 +52,3 @@ export {
   type OnboardingInput,
 } from "./schemas.js";
 export { generateWeeklyPlan, type GeneratePlanOptions } from "./learningPlan.js";
-export {
-  generateWeeklyPlanGrounded,
-  type GroundedPlanOptions,
-} from "./learningPlanGrounded.js";
