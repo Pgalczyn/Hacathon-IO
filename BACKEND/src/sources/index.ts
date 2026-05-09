@@ -2,7 +2,10 @@ import { YouTubeSource } from "./youtube.source.js";
 import { GutendexSource } from "./gutendex.source.js";
 import { OpenAlexSource } from "./openalex.source.js";
 
-
+/**
+ * Registry of available material sources.
+ * To add a new source: implement MaterialSource, then add it here under a stable key.
+ */
 export const sources = {
   yt: new YouTubeSource(),
   books: new GutendexSource(),

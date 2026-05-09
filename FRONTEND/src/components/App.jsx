@@ -7,6 +7,7 @@ import Home from "./Home";
 import Register from "./Register";
 import Learning from "./Learning";
 import LearningForm from "./LearningForm.jsx";
+import PlanView from "./PlanView.jsx";
 import VideoReview from "./VideoReview";
 import TextReview from "./TextReview.jsx";
 import WeeklySummary from "./WeeklySummary.jsx";
@@ -27,6 +28,7 @@ function App() {
                 <Route path="/register" element={<Register />} />
                 <Route path="/learning" element={<Learning />} />
                 <Route path="/learningform" element={<LearningForm />} />
+                <Route path="/plan" element={<PlanView />} />
                 <Route path="/myprofile" element={<MyProfile />} />
                 <Route path="/videoreview" element={<VideoReview />} />
                 <Route path="/textreview" element={<TextReview />} />
