@@ -17,39 +17,16 @@ export async function invokeLLM(prompt: string, options: InvokeOptions = {}): Pr
   const llm = createLLM(llmConfig);
   const response = await llm.invoke(buildMessages(prompt, system));
   return typeof response.content === "string"
-    ? response.content
-    : JSON.stringify(response.content);
-}
-
-export async function* streamLLM(
-  prompt: string,
-  options: InvokeOptions = {},
-): AsyncGenerator<string, void, void> {
-  const { system, ...llmConfig } = options;
-  const llm = createLLM(llmConfig);
-  const stream = await llm.stream(buildMessages(prompt, system));
-  for await (const chunk of stream) {
-    if (typeof chunk.content === "string" && chunk.content.length > 0) {
-      yield chunk.content;
-    }
-  }
+      ? response.content
+      : JSON.stringify(response.content);
 }
 
 export { createLLM } from "./provider.js";
 export type { LLMConfig, LLMProvider } from "./provider.js";
-export { invokeStructured, ExampleSchema, type ExampleOutput, type StructuredOptions } from "./structured.js";
+export { invokeStructured, type StructuredOptions } from "./structured.js";
+
 export {
-  PlanResponseSchema,
-  PlanSchema,
-  LearningTaskSchema,
-  OnboardingInputSchema,
+  OnboardingFormInputSchema,
   TaskFormat,
-  PreferredFormat,
-  ProficiencyLevel,
-  RejectionCategory,
-  type PlanResponse,
-  type Plan,
-  type LearningTask,
-  type OnboardingInput,
-  type ProficiencyLevelValue,
-} from "./schemas.js";
+  type OnboardingFormInput,
+} from "./learning-schemas.js";

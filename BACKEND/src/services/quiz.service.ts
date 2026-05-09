@@ -8,21 +8,18 @@ import {
 } from "../llm/learning-schemas.js";
 
 const SYSTEM_PROMPT = `You are a quiz generator for a self-learning app.
-The user has completed a set of learning tasks. Generate a multiple-choice quiz
-that tests understanding of the material they actually studied.
+Generate a multiple-choice quiz that tests understanding of the material the user studied this week.
 
 RULES:
-- Base every question strictly on the completed tasks provided. Do not invent topics
-  the user has not studied.
+- Base every question STRICTLY on the provided weekly plan / completed tasks context. Do not invent topics outside of this scope.
 - Every question has EXACTLY 4 options (no more, no less).
 - correct_index is 0-based (0 = first option, 3 = last).
 - Vary difficulty according to the requested level. For "mixed", spread easy/medium/hard roughly 30/50/20.
 - Explanations must be clear and educational — reinforce what the learner read/watched.
-- Do NOT repeat questions or rephrase the same concept twice.
-- Include the source task title in the explanation where helpful (e.g. "As covered in CS50P Lecture 0...").
-- topic_tag: a short lowercase tag (1-3 words) identifying the concept this question tests.
+- Include the source task title in the explanation where helpful (e.g. "As covered in the video 'React Hooks Explained'...").
+- topic_tag: a short lowercase tag (1-3 words) identifying the concept this question tests (e.g. 'state', 'props', 'lifecycle'). 
   This is used to detect weak areas for the next week's plan.
-- Language: match the language of the goalText.
+- Language: match the language of the provided context.
 - Number questions starting from 1.`;
 
 export interface GenerateQuizOptions extends LLMConfig {
@@ -35,23 +32,43 @@ export async function generateQuiz(
 ): Promise<QuizResponse> {
     const { retryOnFailure = true, ...llmConfig } = options;
 
-    const taskLines = (input.completedTasks ?? [])
-        .map(
-            (t, i) =>
-                `${i + 1}. [${t.format}] ${t.title}` +
-                (t.description ? ` — ${t.description}` : ""),
-        )
-        .join("\n");
+    let planContext = "";
+
+    // 1. If full Short Term Goal is passed, use its rich context
+    if (input.shortTermGoal) {
+        planContext = [
+            `WEEKLY FOCUS: ${input.shortTermGoal.weekly_focus}`,
+            `TOPIC SUMMARY: ${input.shortTermGoal.topic_summary}`,
+            `TASKS IN THE PLAN:`,
+            ...input.shortTermGoal.tasks.map(
+                (t, i) =>
+                    `  ${i + 1}. [${t.format}] ${t.title}` +
+                    `\n     Description: ${t.description}` +
+                    `\n     Purpose: ${t.why_this}`
+            ),
+        ].join("\n");
+    }
+    // 2. Fallback to basic completedTasks list if Short Term Goal is missing
+    else if (input.completedTasks && input.completedTasks.length > 0) {
+        planContext = [
+            `COMPLETED TASKS:`,
+            ...input.completedTasks.map(
+                (t, i) =>
+                    `  ${i + 1}. [${t.format}] ${t.title}` +
+                    (t.description ? ` — ${t.description}` : "")
+            )
+        ].join("\n");
+    }
 
     const prompt = [
-        `LEARNING GOAL: ${input.context}`,
-        `TOPIC: ${input.topic}`,
-        `NUMBER OF QUESTIONS: ${input.questionCount ?? 5}`,
-        `DIFFICULTY: ${input.difficulty ?? "mixed"}`,
+        `CONTEXT / GOAL: ${input.context ?? "Weekly Review"}`,
+        `TOPIC: ${input.topic ?? input.shortTermGoal?.topic_summary ?? "General Topic"}`,
+        `NUMBER OF QUESTIONS: ${input.questionCount}`,
+        `DIFFICULTY: ${input.difficulty}`,
         ``,
-        taskLines
-            ? `COMPLETED TASKS (quiz must be based on these):\n${taskLines}`
-            : `CONTEXT: ${input.context}`,
+        planContext
+            ? `STUDY MATERIAL CONTEXT (Generate questions based ONLY on this):\n${planContext}`
+            : "No specific study materials provided. Generate a general quiz based on the context.",
     ].join("\n");
 
     return invokeStructured(prompt, QuizResponseSchema, {
@@ -64,7 +81,6 @@ export async function generateQuiz(
 
 /**
  * Grade a completed quiz and build a QuizResult ready to be persisted to the DB.
- * `userAnswers` is an array of 0-based indices corresponding to each question.
  */
 export function gradeQuiz(
     quiz: QuizResponse,
@@ -93,12 +109,10 @@ export function gradeQuiz(
 
     const score = Math.round((correctCount / quiz.questions.length) * 100);
 
-    // A topic is "weak" if the user got < 50 % of its questions right.
     const weakTopics = Object.entries(topicTotal)
         .filter(([tag, total]) => (topicCorrect[tag] ?? 0) / total < 0.5)
         .map(([tag]) => tag);
 
-    // A topic is "strong" if the user got 100 % right.
     const strongTopics = Object.entries(topicTotal)
         .filter(([tag, total]) => (topicCorrect[tag] ?? 0) / total === 1)
         .map(([tag]) => tag);

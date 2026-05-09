@@ -2,17 +2,6 @@ import { HumanMessage, SystemMessage, type BaseMessage } from "@langchain/core/m
 import { z } from "zod";
 import { createLLM, type LLMConfig } from "./provider.js";
 
-// Example schema — replace/extend per workflow needs.
-export const ExampleSchema = z.object({
-  summary: z.string().describe("One-sentence summary of the user's input."),
-  intent: z
-    .enum(["question", "command", "statement", "other"])
-    .describe("Classification of the input."),
-  keywords: z.array(z.string()).describe("Notable keywords from the input."),
-});
-
-export type ExampleOutput = z.infer<typeof ExampleSchema>;
-
 export interface StructuredOptions extends LLMConfig {
   system?: string;
   /** If the first attempt fails schema validation, retry once with a stricter reprompt. */

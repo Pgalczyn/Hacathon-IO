@@ -7,6 +7,7 @@ export const materialsRouter = Router();
 // exist exactly as named in the MaterialsController class.
 
 materialsRouter.get("/", materialsController.manualSearch);
+
 materialsRouter.post("/", materialsController.manualSearch);
 
 materialsRouter.post("/topic", materialsController.discoverTopic);

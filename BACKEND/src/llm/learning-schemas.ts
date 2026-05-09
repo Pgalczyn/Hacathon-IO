@@ -1,9 +1,17 @@
 import { z } from "zod";
 
-// ─────────────────────────────────────────────
-// 1. LONG-TERM GOAL  (multi-week roadmap)
-// ─────────────────────────────────────────────
+// Generic enums
+export const TaskFormat = z.enum([
+    "video",
+    "article",
+    "book",
+    "course",
+    "podcast",
+    "interview",
+    "exercise",
+]);
 
+// 1. LONG-TERM GOAL
 export const MilestoneSchema = z.object({
     week: z.number().int().min(1).describe("Which week this milestone targets."),
     title: z.string().min(1).describe("Short name of the milestone."),
@@ -44,35 +52,11 @@ export const LongTermGoalResponseSchema = z.object({
 export type Milestone = z.infer<typeof MilestoneSchema>;
 export type LongTermGoalResponse = z.infer<typeof LongTermGoalResponseSchema>;
 
-export const LongTermGoalInputSchema = z.object({
-    goalText: z.string().min(10),
-    availableWeeks: z.number().int().min(1).max(52),
-    currentLevel: z.enum(["beginner", "intermediate", "advanced"]),
-    dailyMinutes: z.number().int().min(10).max(480),
-});
-
-export type LongTermGoalInput = z.infer<typeof LongTermGoalInputSchema>;
-
-// ─────────────────────────────────────────────
-// 2. SHORT-TERM GOAL  (weekly plan, 1 week)
-// ─────────────────────────────────────────────
-
-export const TaskFormat = z.enum([
-    "video",
-    "article",
-    "book",
-    "course",
-    "podcast",
-    "interview",
-    "exercise",
-]);
-
+// 2. SHORT-TERM GOAL (weekly plan)
 export const ShortTermTaskSchema = z.object({
     day: z.number().int().min(1).max(7),
     format: TaskFormat,
     title: z.string().min(1),
-    source: z.string().nullable().describe("Creator / channel / author / platform. Null if unknown."),
-    url: z.string().nullable().describe("Only set if highly confident. Never invent URLs."),
     estimated_time_minutes: z.number().int().positive(),
     description: z.string().describe("What this material covers, 1-2 sentences."),
     why_this: z.string().describe("Why this fits the user's goal and level, 1 sentence."),
@@ -83,7 +67,7 @@ export const ShortTermGoalResponseSchema = z.object({
     weekly_focus: z.string().describe("What the user will achieve by end of this week."),
     week_number: z.number().int().min(1),
     daily_time_minutes: z.number().int().positive(),
-    tasks: z.array(ShortTermTaskSchema).min(3).max(14),
+    tasks: z.array(ShortTermTaskSchema).min(0).max(14),
 });
 
 export type ShortTermTask = z.infer<typeof ShortTermTaskSchema>;
@@ -96,7 +80,12 @@ export const ShortTermGoalInputSchema = z.object({
     currentLevel: z.enum(["beginner", "intermediate", "advanced"]),
     dailyMinutes: z.number().int().positive(),
     preferredFormats: z.array(TaskFormat).optional(),
-    /** Previous quiz performance injected when regenerating after a quiz */
+    weeklyReflection: z
+        .string()
+        .optional()
+        .describe(
+            "Free-form reflection from the user about what they learned, completed, struggled with, or enjoyed this week."
+        ),
     quizPerformance: z
         .object({
             score: z.number().min(0).max(100).describe("Quiz score 0-100."),
@@ -105,14 +94,16 @@ export const ShortTermGoalInputSchema = z.object({
         })
         .optional()
         .describe("Filled only when regenerating the short-term goal after a quiz."),
+    longTermRoadmap: LongTermGoalResponseSchema.shape.roadmap.unwrap().optional()
+        .describe("The user's complete long-term roadmap to understand the big picture."),
+    previousPlans: z.array(ShortTermGoalResponseSchema).optional()
+        .describe("History of previous short term goals to avoid repetition."),
+
 });
 
 export type ShortTermGoalInput = z.infer<typeof ShortTermGoalInputSchema>;
 
-// ─────────────────────────────────────────────
 // 3. QUIZ
-// ─────────────────────────────────────────────
-
 export const QuizQuestionSchema = z.object({
     id: z.number().int().min(1),
     question: z.string().min(1),
@@ -149,19 +140,18 @@ export const CompletedTaskForQuizSchema = z.object({
 });
 
 export const QuizInputSchema = z.object({
-    topic: z.string(),
-    context: z.string(),
-    questionCount: z.number(),
-    difficulty: z.enum(["easy", "medium", "hard", "mixed"]),
+    topic: z.string().optional(),
+    context: z.string().optional(),
+    questionCount: z.number().default(5),
+    difficulty: z.enum(["easy", "medium", "hard", "mixed"]).default("mixed"),
+    // Legacy support for basic tasks
     completedTasks: z.array(CompletedTaskForQuizSchema).optional(),
+    // NEW: Pass the entire weekly plan
+    shortTermGoal: ShortTermGoalResponseSchema.optional().describe("The full weekly plan structure generated previously."),
 });
 
 export type QuizInput = z.infer<typeof QuizInputSchema>;
 
-/**
- * Saved result of a completed quiz session — stored in DB,
- * then fed into the next ShortTermGoalInput as `quizPerformance`.
- */
 export const QuizResultSchema = z.object({
     sessionId: z.string(),
     userId: z.string(),
@@ -176,10 +166,7 @@ export const QuizResultSchema = z.object({
 
 export type QuizResult = z.infer<typeof QuizResultSchema>;
 
-// ─────────────────────────────────────────────
-// 4. SHORT-TERM SUMMARY  (end-of-week review)
-// ─────────────────────────────────────────────
-
+// 4. SHORT-TERM SUMMARY
 export const CompletedTaskSchema = z.object({
     title: z.string(),
     format: z.string(),
@@ -233,35 +220,14 @@ export const ShortTermSummaryInputSchema = z.object({
 
 export type ShortTermSummaryInput = z.infer<typeof ShortTermSummaryInputSchema>;
 
-// ─────────────────────────────────────────────
-// 5. ONBOARDING
-// ─────────────────────────────────────────────
-
-export const PreferredFormat = z.enum([
-    "video",
-    "article",
-    "book",
-    "course",
-    "podcast",
-    "community",
-]);
-
-export const ProficiencyLevel = z.enum([
-    "complete_beginner",
-    "beginner",
-    "intermediate",
-    "advanced",
-]);
-
-export type ProficiencyLevelValue = z.infer<typeof ProficiencyLevel>;
-
-export const OnboardingInputSchema = z.object({
-    goalText: z.string().min(20),
-    dailyMinutes: z.number().int().positive(),
-    preferredFormats: z.array(PreferredFormat).min(1),
-    wantsCommunity: z.boolean(),
-    currentLevel: ProficiencyLevel,
-    availableWeeks: z.number().int().min(1).max(52).default(8),
+// 5. ONBOARDING (updated version, supersedes the old OnboardingInputSchema)
+export const OnboardingFormInputSchema = z.object({
+    goal: z.string().min(20),
+    level: z.enum(["complete_beginner", "beginner", "intermediate", "advanced"]), // already valid from the form
+    timeSpent: z.string().min(1),               // e.g. "15-60 minutes", "1-2 hours"
+    methods: z.array(z.string()).min(1),        // e.g. ["Videos/YouTube", "Online Courses"]
+    connectWithOthers: z.boolean(),
+    userId: z.string().optional().default("anonymous"),
 });
 
-export type OnboardingInput = z.infer<typeof OnboardingInputSchema>;
+export type OnboardingFormInput = z.infer<typeof OnboardingFormInputSchema>;

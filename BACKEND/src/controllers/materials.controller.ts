@@ -3,7 +3,7 @@ import { materialsService } from "../services/materials.service.js";
 import { SOURCE_KEYS, type SourceKey } from "../sources/index.js";
 
 export class MaterialsController {
-  /** Helper to parse sources from body or query */
+  // Helper to parse sources from body or query
   private getRequestedSources = (req: Request): SourceKey[] => {
     const raw = req.body?.sources || req.query?.sources;
     if (!raw) return [...SOURCE_KEYS];
@@ -16,10 +16,7 @@ export class MaterialsController {
     return filtered.length > 0 ? filtered : [...SOURCE_KEYS];
   };
 
-  /**
-   * Endpoint: Manual Search
-   * Corresponds to materialsRouter.get("/") and .post("/")
-   */
+  // normal api call
   manualSearch = async (req: Request, res: Response): Promise<void> => {
     const sources = this.getRequestedSources(req);
     const queries = {
@@ -31,11 +28,7 @@ export class MaterialsController {
     const bundle = await materialsService.fetchByQueries(queries, sources);
     res.json(bundle);
   };
-
-  /**
-   * Endpoint: AI Discovery
-   * Corresponds to materialsRouter.post("/topic")
-   */
+  // ai input selected material
   discoverTopic = async (req: Request, res: Response): Promise<void> => {
     const topic = String(req.body?.topic ?? "").trim();
     if (!topic) {
@@ -47,11 +40,7 @@ export class MaterialsController {
     const bundle = await materialsService.fetchByTopic(topic, sources);
     res.json(bundle);
   };
-
-  /**
-   * Endpoint: Single Source
-   * Corresponds to materialsRouter.get("/:source")
-   */
+  // Just one material
   getOne = async (req: Request, res: Response): Promise<void> => {
     const source = req.params.source as SourceKey;
     if (!SOURCE_KEYS.includes(source)) {
