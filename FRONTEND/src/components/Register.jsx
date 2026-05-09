@@ -11,8 +11,42 @@ const Register = () => {
 
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const  handleSubmit = async (e) => {
         e.preventDefault();
+
+        const userData = {
+            login: username,
+            password: password,
+            email: email,
+            dateOfBirth: birthdate,
+            name: name,
+            surname: surname
+        }
+        try {
+            const response = await fetch('http://localhost:3000/addUser', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userData),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // 3. JEŚLI BACKEND ODPOWIEDZIAŁ SUKCESEM:
+                console.log('Zarejestrowano!', data);
+                alert("Konto stworzone pomyślnie!");
+                navigate('/'); // Teraz navigate ma sens - wracamy na stronę główną
+            } else {
+                // 4. JEŚLI BACKEND ZWRÓCIŁ BŁĄD (np. email już istnieje):
+                alert(`Błąd: ${data.message}`);
+            }
+        } catch (error) {
+            console.error('Błąd połączenia z serwerem:', error);
+            alert("Nie udało się połączyć z serwerem.");
+        }
+
         navigate('/');
     };
 

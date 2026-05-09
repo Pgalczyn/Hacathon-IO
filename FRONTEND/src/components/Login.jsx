@@ -5,9 +5,36 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        navigate('/');
+
+        try{
+            const response = await fetch("http://localhost:3000/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    login: username,
+                    password: password,
+                }),
+                credentials: "include"
+            });
+
+            const data = await response.json()
+
+            if(response.ok){
+                alert("Login successful!");
+            }
+            else {
+                alert("Error " + response.status + ": " + data.message);
+            }
+        }
+        catch(err){
+            console.log(err);
+        }
+
+        navigate('/Home');
     };
 
     return (
