@@ -13,7 +13,7 @@ interface TestCase {
 
 const cases: TestCase[] = [
   {
-    label: "Legit: Python web dev (PL)",
+    label: "Legit: Python web dev (PL, beginner)",
     expect: "accept",
     input: {
       goalText:
@@ -21,10 +21,11 @@ const cases: TestCase[] = [
       dailyMinutes: 60,
       preferredFormats: ["video", "article", "course"],
       wantsCommunity: true,
+      currentLevel: "beginner",
     },
   },
   {
-    label: "Legit: Spanish A2 (PL)",
+    label: "Legit: Spanish A2 (PL, complete_beginner)",
     expect: "accept",
     input: {
       goalText:
@@ -32,6 +33,7 @@ const cases: TestCase[] = [
       dailyMinutes: 30,
       preferredFormats: ["video", "podcast", "article"],
       wantsCommunity: false,
+      currentLevel: "complete_beginner",
     },
   },
   {
@@ -43,6 +45,7 @@ const cases: TestCase[] = [
       dailyMinutes: 60,
       preferredFormats: ["article", "video"],
       wantsCommunity: false,
+      currentLevel: "beginner",
     },
   },
   {
@@ -54,6 +57,7 @@ const cases: TestCase[] = [
       dailyMinutes: 60,
       preferredFormats: ["video"],
       wantsCommunity: true,
+      currentLevel: "beginner",
     },
   },
   {
@@ -65,6 +69,7 @@ const cases: TestCase[] = [
       dailyMinutes: 30,
       preferredFormats: ["article", "book"],
       wantsCommunity: false,
+      currentLevel: "intermediate",
     },
   },
   {
@@ -75,10 +80,11 @@ const cases: TestCase[] = [
       dailyMinutes: 30,
       preferredFormats: ["video"],
       wantsCommunity: false,
+      currentLevel: "beginner",
     },
   },
   {
-    label: "Borderline accept: locksport",
+    label: "Borderline accept: locksport (intermediate)",
     expect: "accept",
     input: {
       goalText:
@@ -86,6 +92,7 @@ const cases: TestCase[] = [
       dailyMinutes: 30,
       preferredFormats: ["video", "article", "community"],
       wantsCommunity: true,
+      currentLevel: "intermediate",
     },
   },
 ];

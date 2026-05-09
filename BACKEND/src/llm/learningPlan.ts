@@ -62,7 +62,18 @@ Constraints:
   task.
 - Use ONLY the formats the user marked as preferred.
 - Mix formats across the week — don't put 7 videos in a row.
-- Progress from foundational to more challenging across the week.
+- Match the user's CURRENT_LEVEL (one of: complete_beginner, beginner,
+  intermediate, advanced):
+  * complete_beginner / beginner — start from absolute fundamentals,
+    define jargon, prefer "intro" / "for beginners" materials, gentle
+    progression.
+  * intermediate — assume basics are known, focus on common patterns,
+    real-world examples, second-tier topics; avoid both "Hello World"
+    and PhD-level material.
+  * advanced — deep dives, original papers, idiomatic patterns, edge
+    cases, alternative perspectives; do NOT recommend introductory
+    content.
+- Progress from foundational to more challenging WITHIN the chosen level.
 - Each task is concrete and actionable (not "read about X" but
   "Article: <Title> by <Author>"). Prefer real, well-known resources
   you are confident exist.
@@ -96,6 +107,7 @@ export async function generateWeeklyPlan(
     `USER LEARNING GOAL:`,
     input.goalText,
     ``,
+    `CURRENT_LEVEL: ${input.currentLevel}`,
     `DAILY TIME BUDGET: ${input.dailyMinutes} minutes`,
     `PREFERRED FORMATS: ${input.preferredFormats.join(", ")}`,
     `WANTS TO CONNECT WITH OTHERS: ${input.wantsCommunity ? "yes" : "no"}`,

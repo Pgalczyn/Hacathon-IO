@@ -45,10 +45,12 @@ export {
   OnboardingInputSchema,
   TaskFormat,
   PreferredFormat,
+  ProficiencyLevel,
   RejectionCategory,
   type PlanResponse,
   type Plan,
   type LearningTask,
   type OnboardingInput,
+  type ProficiencyLevelValue,
 } from "./schemas.js";
 export { generateWeeklyPlan, type GeneratePlanOptions } from "./learningPlan.js";
