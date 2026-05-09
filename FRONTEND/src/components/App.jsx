@@ -1,3 +1,5 @@
+
+import {AuthProvider} from "./AuthContext.jsx";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./Navbar";
 import Login from "./Login";
@@ -14,24 +16,26 @@ import "./index.css";
 
 function App() {
   return (
-    <BrowserRouter>
-      <div className="d-flex flex-column vh-100">
-        <Navbar />
-        <div className="flex-grow-1 d-flex">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/learning" element={<Learning />} />
-            <Route path="/learningform" element={<LearningForm />} />
-            <Route path="/myprofile" element={<MyProfile />} />
-            <Route path="/videoreview" element={<VideoReview />} />
-            <Route path="/textreview" element={<TextReview />} />
-            <Route path="/weeklysummary" element={<WeeklySummary />} />
-          </Routes>
-        </div>
-      </div>
-    </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <div className="d-flex flex-column vh-100">
+            <Navbar />
+            <div className="flex-grow-1 d-flex">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/learning" element={<Learning />} />
+                <Route path="/learningform" element={<LearningForm />} />
+                <Route path="/myprofile" element={<MyProfile />} />
+                <Route path="/videoreview" element={<VideoReview />} />
+                <Route path="/textreview" element={<TextReview />} />
+                <Route path="/weeklysummary" element={<WeeklySummary />} />
+              </Routes>
+            </div>
+          </div>
+        </BrowserRouter>
+      </AuthProvider>
   );
 }
 
