@@ -87,6 +87,18 @@ URL RULES (very important — models hallucinate URLs):
   video IDs, or article paths.
 - It is always better to give title + author/channel + null URL.
 
+LEARNER PROFILE (when present):
+- The user prompt may include a "LEARNER PROFILE" block summarizing
+  the user's past ratings of materials in this app.
+- Treat it as strong signal for personalization:
+  * Bias toward formats they liked; reduce or skip formats they
+    disliked (unless they explicitly asked for that format in
+    PREFERRED FORMATS — never violate the user's explicit choice).
+  * Adjust difficulty up or down per the difficulty pattern.
+  * Don't recommend titles/sources marked as "recently disliked".
+  * Recommend MORE in the style of "recently loved" items.
+- If no LEARNER PROFILE is present, plan from scratch as usual.
+
 Language: match the language of the user's goal text. If the user
 writes in Polish, every string in your output (descriptions,
 why_this, rejection_reason, weekly_focus, topic_summary) must be in
@@ -97,13 +109,19 @@ Tone: encouraging, concrete, no fluff, no moralizing.`;
 
 export interface GeneratePlanOptions extends LLMConfig {
   retryOnFailure?: boolean;
+  /**
+   * Optional pre-rendered "LEARNER PROFILE" block (see recommendation service).
+   * If provided, it's injected into the user prompt so the LLM can
+   * personalize the plan to the user's past rating history.
+   */
+  learnerContext?: string;
 }
 
 export async function generateWeeklyPlan(
   input: OnboardingInput,
   options: GeneratePlanOptions = {},
 ): Promise<PlanResponse> {
-  const userPrompt = [
+  const sections: string[] = [
     `USER LEARNING GOAL:`,
     input.goalText,
     ``,
@@ -111,11 +129,17 @@ export async function generateWeeklyPlan(
     `DAILY TIME BUDGET: ${input.dailyMinutes} minutes`,
     `PREFERRED FORMATS: ${input.preferredFormats.join(", ")}`,
     `WANTS TO CONNECT WITH OTHERS: ${input.wantsCommunity ? "yes" : "no"}`,
-  ].join("\n");
+  ];
 
-  return invokeStructured(userPrompt, PlanResponseSchema, {
+  if (options.learnerContext && options.learnerContext.trim().length > 0) {
+    sections.push("", `LEARNER PROFILE (from past reviews):`, options.learnerContext);
+  }
+
+  const { learnerContext: _ignore, ...llmOptions } = options;
+
+  return invokeStructured(sections.join("\n"), PlanResponseSchema, {
     system: SYSTEM_PROMPT,
-    temperature: options.temperature ?? 0.4,
-    ...options,
+    temperature: llmOptions.temperature ?? 0.4,
+    ...llmOptions,
   });
 }

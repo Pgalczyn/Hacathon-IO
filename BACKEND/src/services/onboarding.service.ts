@@ -5,6 +5,7 @@ import {
 } from "../llm/index.js";
 import { materialsService, type MaterialBundle } from "./materials.service.js";
 import { planService } from "./plan.service.js";
+import { recommendationService } from "./recommendation.service.js";
 
 export interface OnboardingResponse {
   validation: PlanResponse["validation"];
@@ -26,7 +27,21 @@ export class OnboardingService {
    * when a userId is supplied, persists the result.
    */
   async run(input: OnboardingInput, options: RunOptions = {}): Promise<OnboardingResponse> {
-    const planResponse = await generateWeeklyPlan(input);
+    let learnerContext: string | undefined;
+    if (options.userId) {
+      try {
+        const ctx = await recommendationService.buildPromptContext(options.userId);
+        learnerContext = ctx ?? undefined;
+      } catch (err) {
+        // Insights are best-effort: a Mongo hiccup shouldn't kill plan generation.
+        console.warn("Failed to build learner insights:", err instanceof Error ? err.message : err);
+      }
+    }
+
+    const planResponse = await generateWeeklyPlan(
+      input,
+      learnerContext ? { learnerContext } : {},
+    );
 
     if (!planResponse.validation.accepted || !planResponse.plan) {
       return {
