@@ -6,6 +6,7 @@ import {learningRouter} from "./routes/learning.routes.js";
 export function createApp() {
   const app = express();
 
+  // CRITICAL: This must be before routes
   app.use(express.json());
 
   app.get("/health", (_req, res) => {
