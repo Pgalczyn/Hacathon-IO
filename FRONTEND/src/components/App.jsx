@@ -35,7 +35,7 @@ function App() {
               <Route path="/videoreview" element={<VideoReview />} />
               <Route path="/textreview" element={<TextReview />} />
               <Route path="/weeklysummary" element={<WeeklySummary />} />
-              <Route path="/match" element={<Match />} />
+              {/* <Route path="/match" element={<Match />} /> */}
               <Route path="/conversation" element={<Conversation />} />
               <Route path="/conversation/:id" element={<Conversation />} />
               <Route path="/longplan" element={<LongTermPlan />} />
