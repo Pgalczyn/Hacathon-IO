@@ -8,6 +8,8 @@ import cookieParser from 'cookie-parser';
 import bcrypt from "bcrypt";
 import { connectDatabase } from "./dataBase.js";
 import { User } from './models/userBasic.js';
+import  {authMiddleware} from "./authMiddleware.js";
+import {LearningGoal} from "./models/learningForm.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -33,6 +35,60 @@ app.use(cors({
 app.use(cookieParser());
 
 // ENDPOINTS
+
+app.get("/send/learning/goals",authMiddleware, async (req, res) => {
+    try {
+
+        const currentUserId = (req as any).userInfo.userID;
+
+        const goal = await LearningGoal.findOne({
+            userId: currentUserId
+        });
+        if (!goal) {
+            return res.status(404).json({
+                status: "error",
+                message: "Nie znaleziono celu lub brak uprawnień do jego wyświetlenia."
+            });
+        }
+
+        res.status(200).json(goal);
+    }
+    catch(err:any) {
+        res.status(500).json({
+            status: "error",
+            message: "Błąd podczas pobierania celu: " + err.message
+        });
+    }
+
+
+})
+
+
+app.post('/learning/goals/save',authMiddleware ,async (req, res) => {
+    try{
+        const {whatDoYouWantToLearn,describeYourCurrentSKill,timeDaily,learningMethods} = req.body;
+
+        const verifiedUser = (req as  any).userInfo.userID;
+
+        const learningGoal = new LearningGoal({
+                whatDoYouWantToLearn,
+                describeYourCurrentSKill,
+                timeDaily,
+                learningMethods,
+                userID:verifiedUser,
+            }
+        );
+
+        await learningGoal.save();
+        res.status(200).json({ status: "success", message: "User successfully added." });
+    }
+    catch(err: any){
+        res.status(500).json({ status: "error ja pieredole ", message: err.message });
+    }
+})
+
+
+
 app.get("/loggedIn/status", (req, res) => {
     const token = req.cookies.token;
     if (!token) {
