@@ -144,36 +144,52 @@ const WeeklySummary = () => {
   const [attempt, setAttempt] = useState(null);
   const [updatingPlan, setUpdatingPlan] = useState(false);
 
+  // Gate: a weekly summary only makes sense once the user has actually
+  // filled the questionnaire and has a plan. If /plan 404s, send them to
+  // the form instead of letting them stare at "Generate weekly summary"
+  // (which would just blow up with "No plan found to summarize").
   useEffect(() => {
     let cancelled = false;
-
     setLoading(true);
-    fetch(`${API_URL}/week/summary`, { credentials: "include" })
-      .then(async (r) => {
+
+    (async () => {
+      try {
+        const planRes = await fetch(`${API_URL}/plan`, { credentials: "include" });
         if (cancelled) return;
+        if (planRes.status === 401) {
+          setUnauthorized(true);
+          setLoading(false);
+          return;
+        }
+        if (planRes.status === 404) {
+          navigate("/learningform", { replace: true });
+          return;
+        }
 
+        const r = await fetch(`${API_URL}/week/summary`, { credentials: "include" });
+        if (cancelled) return;
         if (r.status === 404) return;
-
         if (r.status === 401) {
           setUnauthorized(true);
           return;
         }
-
         if (!r.ok) {
           const j = await r.json().catch(() => ({}));
           setError(j.message || `Failed (${r.status})`);
           return;
         }
-
         setSummary(await r.json());
-      })
-      .catch((e) => !cancelled && setError(e.message))
-      .finally(() => !cancelled && setLoading(false));
+      } catch (e) {
+        if (!cancelled) setError(e.message);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [navigate]);
 
   const handleGenerate = async () => {
     setError("");

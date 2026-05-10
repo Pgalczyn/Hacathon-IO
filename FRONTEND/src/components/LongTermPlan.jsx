@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./index.css";
 
 import API_URL from "../api.js";
@@ -169,6 +169,7 @@ const Calendar = ({ plan, monthIndex, onPrev, onNext }) => {
 };
 
 const LongTermPlan = () => {
+  const navigate = useNavigate();
   const [plan, setPlan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -182,6 +183,10 @@ const LongTermPlan = () => {
   // (the LLM call typically takes ~30s) instead of forcing the user to
   // press a button. Cap at 2 minutes so we don't loop forever if the
   // background job died.
+  //
+  // First, gate on the weekly plan: if the user never filled the form,
+  // there's no point polling /longplan — kick them to /learningform so
+  // the questionnaire is the obligatory first step.
   useEffect(() => {
     let cancelled = false;
     let timeoutId = null;
@@ -199,8 +204,6 @@ const LongTermPlan = () => {
         }
         if (r.status === 404) {
           if (Date.now() - startedAt >= POLL_BUDGET_MS) {
-            // Likely the background job failed. Stop polling and let the
-            // user trigger a manual regen from the empty-state CTA.
             setLoading(false);
             return;
           }
@@ -224,12 +227,33 @@ const LongTermPlan = () => {
       }
     };
 
-    fetchOnce();
+    (async () => {
+      try {
+        const planRes = await fetch(`${API_URL}/plan`, { credentials: "include" });
+        if (cancelled) return;
+        if (planRes.status === 401) {
+          setUnauthorized(true);
+          setLoading(false);
+          return;
+        }
+        if (planRes.status === 404) {
+          navigate("/learningform", { replace: true });
+          return;
+        }
+        // Weekly plan exists — yearly might still be brewing in background.
+        fetchOnce();
+      } catch (e) {
+        if (cancelled) return;
+        setError(e.message || "Network error");
+        setLoading(false);
+      }
+    })();
+
     return () => {
       cancelled = true;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, []);
+  }, [navigate]);
 
   const handleGenerate = async () => {
     setError("");
