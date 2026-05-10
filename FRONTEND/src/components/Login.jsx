@@ -1,9 +1,11 @@
 import {useState} from "react";
 import {Link, useNavigate} from 'react-router-dom';
+import {useAuth} from "./AuthContext.jsx";
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
+    const {checkAuthStatus} = useAuth();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -24,7 +26,9 @@ const Login = () => {
             const data = await response.json()
 
             if(response.ok){
-                alert("Login successful!");
+                await checkAuthStatus();
+                navigate('/');
+                return;
             }
             else {
                 alert("Error " + response.status + ": " + data.message);
@@ -33,8 +37,6 @@ const Login = () => {
         catch(err){
             console.log(err);
         }
-
-        navigate('/Home');
     };
 
     return (
