@@ -14,9 +14,9 @@ const FORMAT_BADGE = {
   exercise: "bg-primary",
 };
 
-const reviewRouteFor = (type) => (type === "video" ? "/videoreview" : "/textreview");
+export const reviewRouteFor = (type) => (type === "video" ? "/videoreview" : "/textreview");
 
-function loadCachedPlan() {
+export function loadCachedPlan() {
   try {
     const raw = localStorage.getItem("currentPlan");
     return raw ? JSON.parse(raw) : null;
@@ -25,7 +25,7 @@ function loadCachedPlan() {
   }
 }
 
-const TaskCard = ({ task, planId, taskIndex }) => {
+export const TaskCard = ({ task, planId, taskIndex }) => {
   const navigate = useNavigate();
   const handleReview = () => {
     navigate(reviewRouteFor(task.format), {
@@ -76,7 +76,7 @@ const TaskCard = ({ task, planId, taskIndex }) => {
   );
 };
 
-const DayBlock = ({ day, tasks, planId }) => (
+export const DayBlock = ({ day, tasks, planId }) => (
   <div className="mb-3">
     <h5 className="fw-bold mb-2">Day {day}</h5>
     {tasks.map((t, i) => (
@@ -85,7 +85,7 @@ const DayBlock = ({ day, tasks, planId }) => (
   </div>
 );
 
-const VideoCard = ({ v, onReview }) => (
+export const VideoCard = ({ v, onReview }) => (
   <div className="card shadow-sm h-100" style={{ borderRadius: "12px" }}>
     <a href={v.embedUrl} target="_blank" rel="noreferrer">
       {v.thumbnail && (
@@ -106,7 +106,7 @@ const VideoCard = ({ v, onReview }) => (
   </div>
 );
 
-const SimpleListItem = ({ title, subtitle, href, onReview }) => (
+export const SimpleListItem = ({ title, subtitle, href, onReview }) => (
   <div className="card mb-2 shadow-sm" style={{ borderRadius: "12px" }}>
     <div className="card-body py-2 px-3">
       <div className="d-flex justify-content-between align-items-start gap-2">
@@ -131,7 +131,7 @@ const SimpleListItem = ({ title, subtitle, href, onReview }) => (
   </div>
 );
 
-const PlanView = () => {
+export const PlanView = () => {
   const location = useLocation();
   const navigateRouter = useNavigate();
   const [data, setData] = useState(() => location.state?.plan ?? loadCachedPlan());

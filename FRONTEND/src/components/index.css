@@ -5,6 +5,7 @@
   font-weight: 600;
   transition: all 0.2s ease;
 }
+.bg-purple { background-color: #6f42c1; }
 
 .purple-btn:hover {
   background-color: #9944fc !important;
