@@ -56,6 +56,16 @@ const Navbar = () => {
                 Learning
               </Link>
             </li>
+            <li className="nav-item">
+              <Link to="/weeklysummary" className="btn navbar-btn btn-lg px-4">
+                Summary
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link to="/match" className="btn navbar-btn btn-lg px-4">
+                Match
+              </Link>
+            </li>
           </ul>
 
           <div className="d-flex gap-2 ms-auto">
