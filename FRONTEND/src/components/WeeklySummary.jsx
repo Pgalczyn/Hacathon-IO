@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./index.css";
 
 const API_URL = "http://localhost:3000";
@@ -133,13 +133,16 @@ const QuizQuestion = ({ q, value, onChange, locked, grade }) => {
 };
 
 const WeeklySummary = () => {
+  const navigate = useNavigate();
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [unauthorized, setUnauthorized] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [answers, setAnswers] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [attempt, setAttempt] = useState(null);
+  const [updatingPlan, setUpdatingPlan] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -152,7 +155,7 @@ const WeeklySummary = () => {
         if (r.status === 404) return;
 
         if (r.status === 401) {
-          setError("Sign in to view your weekly summary.");
+          setUnauthorized(true);
           return;
         }
 
@@ -201,6 +204,34 @@ const WeeklySummary = () => {
     }
   };
 
+  const handleUpdatePlan = async () => {
+    setError("");
+    setUpdatingPlan(true);
+    try {
+      const r = await fetch(`${API_URL}/plan/next`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const j = await r.json();
+      if (!r.ok) {
+        setError(j.message || `Failed (${r.status})`);
+        return;
+      }
+      try {
+        localStorage.setItem("currentPlan", JSON.stringify(j));
+      } catch {
+        // ignore
+      }
+      navigate("/learning", { state: { plan: j } });
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setUpdatingPlan(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!summary) return;
@@ -242,6 +273,26 @@ const WeeklySummary = () => {
       setSubmitting(false);
     }
   };
+
+  if (unauthorized) {
+    return (
+      <div className="container py-4">
+        <div
+          className="card shadow-sm p-4 text-center mx-auto"
+          style={{ maxWidth: "480px", borderRadius: "16px" }}
+        >
+          <h3 className="fw-bold mb-3">End of the week</h3>
+          <p className="text-muted mb-4">
+            To generate a recap of what you learned this week, plus a short
+            quiz to test yourself — log in.
+          </p>
+          <Link to="/login" className="btn purple-btn btn-lg">
+            Log in
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -346,6 +397,17 @@ const WeeklySummary = () => {
                       Total score: {Math.round(attempt.totalScore * 100)}%
                     </div>
                   </div>
+
+                  <button
+                    type="button"
+                    className="btn purple-btn w-100 mb-2"
+                    onClick={handleUpdatePlan}
+                    disabled={updatingPlan}
+                  >
+                    {updatingPlan
+                      ? "Updating plan based on your answers…"
+                      : "Update my plan based on these answers"}
+                  </button>
 
                   <Link
                     to="/conversation"
