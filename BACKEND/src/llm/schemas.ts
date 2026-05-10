@@ -49,7 +49,11 @@ export const PlanSchema = z.object({
   weekly_focus: z
     .string()
     .describe("What the user will achieve by end of this week."),
-  daily_time_minutes: z.number().int().positive(),
+  // Allow 0 because the LLM returns a placeholder plan (with 0 here)
+  // when the goal is rejected — strict positive() blew up parsing for
+  // every "frivolous"/"illegal" rejection. The service zeroes the
+  // whole plan to null on rejection anyway.
+  daily_time_minutes: z.number().int().nonnegative(),
   tasks: z
     .array(LearningTaskSchema)
     .max(21)
