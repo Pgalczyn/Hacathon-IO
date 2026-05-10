@@ -54,3 +54,15 @@ export {
   type ProficiencyLevelValue,
 } from "./schemas.js";
 export { generateWeeklyPlan, type GeneratePlanOptions } from "./learningPlan.js";
+export {
+  generateWeeklySummary,
+  gradeQuizAnswers,
+  WeeklySummaryGenSchema,
+  QuizQuestionSchema,
+  QuizGradingSchema,
+  type WeeklySummaryGen,
+  type QuizQuestion,
+  type QuizGrading,
+  type GenerateSummaryInput,
+  type GradeAnswersInput,
+} from "./weeklySummary.js";
