@@ -152,7 +152,9 @@ const Conversation = () => {
           style={{ maxWidth: "480px", borderRadius: "16px" }}
         >
           <h3 className="fw-bold mb-3">Talk to your tutor</h3>
-          <p className="text-muted">Sign in to chat with the AI tutor about your plan.</p>
+          <p className="text-muted">
+            Sign in to chat with the AI tutor about your plan.
+          </p>
           <Link to="/login" className="btn purple-btn btn-lg">
             Log in
           </Link>
@@ -162,7 +164,9 @@ const Conversation = () => {
   }
 
   if (loading) {
-    return <div className="container py-4 text-muted">Loading conversation…</div>;
+    return (
+      <div className="container py-4 text-muted">Loading conversation…</div>
+    );
   }
 
   if (!convo) {
@@ -174,8 +178,8 @@ const Conversation = () => {
         >
           <h3 className="fw-bold mb-2">Talk to your tutor</h3>
           <p className="text-muted">
-            Have an open conversation about your latest plan. The AI tutor will ask
-            questions to check your understanding.
+            Have an open conversation about your latest plan. The AI tutor will
+            ask questions to check your understanding.
           </p>
           {error && <div className="alert alert-danger small">{error}</div>}
           <button
@@ -220,7 +224,11 @@ const Conversation = () => {
             <div className="d-flex justify-content-start mb-2">
               <div
                 className="px-3 py-2 shadow-sm text-muted small fst-italic"
-                style={{ borderRadius: "16px", background: "white", border: "1px solid #e9ecef" }}
+                style={{
+                  borderRadius: "16px",
+                  background: "white",
+                  border: "1px solid #e9ecef",
+                }}
               >
                 tutor is thinking…
               </div>
@@ -252,7 +260,12 @@ const Conversation = () => {
       </div>
 
       <div className="text-center small">
-        <Link to="/plan">Back to plan</Link>
+        <Link
+          to="/plan"
+          className="auth-link small border-0 bg-transparent p-0"
+        >
+          Back to plan
+        </Link>
       </div>
     </div>
   );

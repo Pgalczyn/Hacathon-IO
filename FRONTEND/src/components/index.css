@@ -49,17 +49,17 @@ body {
 }
 
 .auth-link {
-  color: #6f42c1;
-  font-weight: 600;
-  text-decoration: none;
-  transition: 0.2s ease;
+  color: #6f42c1 !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  transition: 0.2s ease !important;
 }
 
 .auth-link-text-only {
-  color: #6f42c1;
-  font-weight: 600;
-  text-decoration: none;
-  transition: 0.2s ease;
+  color: #6f42c1 !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  transition: 0.2s ease !important;
 }
 
 .auth-link:hover {
