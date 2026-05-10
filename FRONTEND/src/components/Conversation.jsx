@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import WelcomeStartCard from "./WelcomeStartCard.jsx";
+import { useAuth } from "./AuthContext.jsx";
 import "./index.css";
 
 import API_URL from "../api.js";
@@ -31,6 +32,7 @@ const MessageBubble = ({ msg }) => {
 const Conversation = () => {
   const { id: routeId } = useParams();
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [convo, setConvo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
@@ -158,6 +160,29 @@ const Conversation = () => {
       setSending(false);
     }
   };
+
+  if (authLoading) {
+    return <div className="text-center py-5">Loading…</div>;
+  }
+
+  if (!user) {
+    return (
+      <div className="container py-4">
+        <div
+          className="card shadow-sm p-4 text-center mx-auto"
+          style={{ maxWidth: "480px", borderRadius: "16px" }}
+        >
+          <h3 className="fw-bold mb-3">Talk to your tutor</h3>
+          <p className="text-muted">
+            Sign in to chat with the AI tutor about your plan.
+          </p>
+          <Link to="/login" className="btn purple-btn btn-lg">
+            Log in
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (noPlan) {
     return <WelcomeStartCard />;
