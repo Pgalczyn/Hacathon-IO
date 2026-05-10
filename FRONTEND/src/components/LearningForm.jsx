@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./index.css";
 
-const API_URL = "http://localhost:3000";
+import API_URL from "../api.js";
 
 const LEVEL_OPTIONS = [
   { value: "complete_beginner", label: "I'm new — show me the basics" },

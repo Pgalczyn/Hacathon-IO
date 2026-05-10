@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import "./index.css";
 
-const API_URL = "http://localhost:3000";
+import API_URL from "../api.js";
 
 const MessageBubble = ({ msg }) => {
   const isUser = msg.role === "user";

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "./index.css";
 
-const API_URL = "http://localhost:3000";
+import API_URL from "../api.js";
 
 const LEVEL_LABEL = {
   complete_beginner: "Complete beginner",

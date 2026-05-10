@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./index.css";
 
-const API_URL = "http://localhost:3000";
+import API_URL from "../api.js";
 
 const FORMAT_BADGE = {
   video: "bg-danger",
