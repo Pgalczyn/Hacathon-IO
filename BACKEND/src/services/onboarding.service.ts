@@ -6,6 +6,7 @@ import {
 import { materialsService, type MaterialBundle } from "./materials.service.js";
 import { planService } from "./plan.service.js";
 import { recommendationService } from "./recommendation.service.js";
+import { longTermPlanService } from "./longTermPlan.service.js";
 
 export interface OnboardingResponse {
   validation: PlanResponse["validation"];
@@ -13,6 +14,8 @@ export interface OnboardingResponse {
   materials: MaterialBundle | null;
   /** Mongo `_id` of the persisted Plan, or null if anonymous / save failed. */
   planId: string | null;
+  /** Mongo `_id` of the persisted yearly LongTermPlan, or null. */
+  longTermPlanId: string | null;
 }
 
 export interface RunOptions {
@@ -52,6 +55,7 @@ export class OnboardingService {
         plan: null,
         materials: null,
         planId: null,
+        longTermPlanId: null,
       };
     }
 
@@ -59,6 +63,7 @@ export class OnboardingService {
     const materials = await materialsService.fetchByTopic(topic);
 
     let planId: string | null = null;
+    let longTermPlanId: string | null = null;
     if (options.userId) {
       try {
         const saved = await planService.save({
@@ -73,6 +78,26 @@ export class OnboardingService {
         // return the plan to the client. The caller will see planId=null.
         console.warn("Failed to persist plan:", err instanceof Error ? err.message : err);
       }
+
+      // Generate the yearly plan in the same request so the user lands on a
+      // ready calendar. Best-effort: if the LLM call fails (rate limits, bad
+      // JSON), we still return the weekly plan and let the user retry yearly.
+      try {
+        console.log("[onboarding] generating yearly plan...");
+        const longPlan = await longTermPlanService.generateForUser({
+          userId: options.userId,
+          goalText: input.goalText,
+          currentLevel: input.currentLevel,
+          preferredFormats: input.preferredFormats,
+        });
+        longTermPlanId = String(longPlan._id);
+        console.log("[onboarding] yearly plan saved:", longTermPlanId);
+      } catch (err) {
+        console.warn(
+          "Failed to generate yearly plan:",
+          err instanceof Error ? err.message : err,
+        );
+      }
     }
 
     return {
@@ -80,6 +105,7 @@ export class OnboardingService {
       plan: planResponse.plan,
       materials,
       planId,
+      longTermPlanId,
     };
   }
 
