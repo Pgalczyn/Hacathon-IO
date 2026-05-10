@@ -176,27 +176,58 @@ const LongTermPlan = () => {
   const [unauthorized, setUnauthorized] = useState(false);
   const [monthIndex, setMonthIndex] = useState(1);
 
+  // Onboarding kicks off yearly generation in the background and returns
+  // before it finishes. So when this page mounts after a fresh /onboarding
+  // submit, /longplan often returns 404 for a while. Poll every few seconds
+  // (the LLM call typically takes ~30s) instead of forcing the user to
+  // press a button. Cap at 2 minutes so we don't loop forever if the
+  // background job died.
   useEffect(() => {
     let cancelled = false;
-    fetch(`${API_URL}/longplan`, { credentials: "include" })
-      .then(async (r) => {
+    let timeoutId = null;
+    const startedAt = Date.now();
+    const POLL_BUDGET_MS = 120_000;
+
+    const fetchOnce = async () => {
+      try {
+        const r = await fetch(`${API_URL}/longplan`, { credentials: "include" });
         if (cancelled) return;
         if (r.status === 401) {
           setUnauthorized(true);
+          setLoading(false);
           return;
         }
-        if (r.status === 404) return;
+        if (r.status === 404) {
+          if (Date.now() - startedAt >= POLL_BUDGET_MS) {
+            // Likely the background job failed. Stop polling and let the
+            // user trigger a manual regen from the empty-state CTA.
+            setLoading(false);
+            return;
+          }
+          if (!cancelled) {
+            timeoutId = setTimeout(fetchOnce, 4000);
+          }
+          return;
+        }
         const j = await r.json();
         if (!r.ok) {
           setError(j.message || `Failed (${r.status})`);
+          setLoading(false);
           return;
         }
         setPlan(j);
-      })
-      .catch((e) => !cancelled && setError(e.message || "Network error"))
-      .finally(() => !cancelled && setLoading(false));
+        setLoading(false);
+      } catch (e) {
+        if (cancelled) return;
+        setError(e.message || "Network error");
+        setLoading(false);
+      }
+    };
+
+    fetchOnce();
     return () => {
       cancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
     };
   }, []);
 
@@ -247,7 +278,23 @@ const LongTermPlan = () => {
 
   if (loading) {
     return (
-      <div className="container py-4 text-muted">Loading your yearly plan…</div>
+      <div className="container py-5">
+        <div
+          className="card shadow-sm p-4 text-center mx-auto"
+          style={{ maxWidth: "560px", borderRadius: "16px" }}
+        >
+          <div
+            className="spinner-border mx-auto mb-3"
+            style={{ color: "#9f46ed", width: "2.5rem", height: "2.5rem" }}
+            role="status"
+          />
+          <h4 className="fw-bold mb-2">Generating your 12-month roadmap…</h4>
+          <p className="text-muted mb-0 small">
+            This usually takes ~30s. Hang tight — you can also leave this tab
+            open and come back; the calendar will appear automatically.
+          </p>
+        </div>
+      </div>
     );
   }
 
