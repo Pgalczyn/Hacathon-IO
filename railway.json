@@ -2,9 +2,7 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "watchPatterns": [
-      "BACKEND/**"
-    ]
+    "buildCommand": "cd BACKEND && npm install && npm run build"
   },
   "deploy": {
     "startCommand": "cd BACKEND && npm run start",
