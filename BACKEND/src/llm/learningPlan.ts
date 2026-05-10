@@ -6,9 +6,6 @@ import {
   type PlanResponse,
 } from "./schemas.js";
 
-// `community` is a communication preference, not a material format,
-// so it never reaches the LLM as a "preferredFormat" — otherwise the
-// model picks "community" as a task.format which isn't a valid value.
 const MATERIAL_FORMATS_FROM_PREFERENCE = ["video", "article", "book", "course", "podcast"] as const;
 
 const SYSTEM_PROMPT = `You are the planning brain of a self-learning app. You receive a user's
@@ -183,9 +180,6 @@ export async function generateWeeklyPlan(
   input: OnboardingInput,
   options: GeneratePlanOptions = {},
 ): Promise<PlanResponse> {
-  // Strip `community` — it's a community/contact preference, not a task
-  // format. If it leaks through, the LLM picks "community" as task.format
-  // which is not a valid TaskFormat value.
   const materialFormats = input.preferredFormats.filter(
     (f): f is (typeof MATERIAL_FORMATS_FROM_PREFERENCE)[number] =>
       (MATERIAL_FORMATS_FROM_PREFERENCE as readonly string[]).includes(f),
@@ -199,9 +193,8 @@ export async function generateWeeklyPlan(
     `CURRENT_LEVEL: ${input.currentLevel}`,
     `DAILY TIME BUDGET: ${input.dailyMinutes} minutes`,
     `PREFERRED MATERIAL FORMATS (use ONLY these for task.format): ${formatsForPrompt.join(", ")}`,
-    `WANTS TO CONNECT WITH OTHERS: ${input.wantsCommunity ? "yes" : "no"}`,
     ``,
-    `TASK FORMAT CONSTRAINT: every task.format MUST be exactly one of: video, article, book, course, podcast, interview, exercise. Never use "community" — that's a contact preference, not a material format.`,
+    `TASK FORMAT CONSTRAINT: every task.format MUST be exactly one of: video, article, book, course, podcast, interview, exercise.`,
   ];
 
   if (options.learnerContext && options.learnerContext.trim().length > 0) {

@@ -17,7 +17,6 @@ const METHODS = [
   { key: "book", label: "Books / E-books" },
   { key: "course", label: "Online Courses" },
   { key: "podcast", label: "Podcasts / Interviews" },
-  { key: "community", label: "Community / Forums" },
 ];
 
 const TIME_BUCKETS = [
@@ -37,7 +36,6 @@ const LearningForm = () => {
     level: "",
     timeBucketIndex: 1,
     methods: [],
-    connectWithOthers: false,
   });
 
   const handleInputChange = (e) => {
@@ -78,7 +76,6 @@ const LearningForm = () => {
       currentLevel: formData.level,
       dailyMinutes: TIME_BUCKETS[formData.timeBucketIndex].minutes,
       preferredFormats: formData.methods,
-      wantsCommunity: formData.connectWithOthers,
     };
 
     setSubmitting(true);
@@ -198,21 +195,6 @@ const LearningForm = () => {
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="form-check">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              id="connectWithOthers"
-              checked={formData.connectWithOthers}
-              onChange={(e) =>
-                setFormData({ ...formData, connectWithOthers: e.target.checked })
-              }
-            />
-            <label className="form-check-label" htmlFor="connectWithOthers">
-              I want to connect with other learners
-            </label>
           </div>
 
           {serverError && (

@@ -98,7 +98,6 @@ export const PreferredFormat = z.enum([
   "book",
   "course",
   "podcast",
-  "community",
 ]);
 
 export const ProficiencyLevel = z.enum([
@@ -114,7 +113,6 @@ export const OnboardingInputSchema = z.object({
   goalText: z.string().min(20),
   dailyMinutes: z.number().int().positive(),
   preferredFormats: z.array(PreferredFormat).min(1),
-  wantsCommunity: z.boolean(),
   currentLevel: ProficiencyLevel,
 });
 

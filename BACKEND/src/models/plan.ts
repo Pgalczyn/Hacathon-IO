@@ -40,7 +40,6 @@ export interface IPlan extends Document {
     currentLevel: string;
     dailyMinutes: number;
     preferredFormats: string[];
-    wantsCommunity: boolean;
   };
   status: PlanStatus;
   topicSummary: string;
@@ -79,7 +78,6 @@ const PlanSchema: Schema<IPlan> = new Schema(
       currentLevel: { type: String, required: true },
       dailyMinutes: { type: Number, required: true },
       preferredFormats: { type: [String], required: true },
-      wantsCommunity: { type: Boolean, required: true },
     },
     // Legacy plans (created before this field) get default "accepted"
     // — they were already in active use. New plans always start as

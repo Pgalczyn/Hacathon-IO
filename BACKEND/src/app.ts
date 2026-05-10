@@ -8,7 +8,6 @@ import { authRouter } from "./routes/auth.routes.js";
 import { planRouter } from "./routes/plan.routes.js";
 import { reviewRouter } from "./routes/review.routes.js";
 import { weeklySummaryRouter } from "./routes/weeklySummary.routes.js";
-import { matchRouter } from "./routes/match.routes.js";
 import { conversationRouter } from "./routes/conversation.routes.js";
 import { longTermPlanRouter } from "./routes/longTermPlan.routes.js";
 import { optionalAuth } from "./middleware/auth.middleware.js";
@@ -36,7 +35,6 @@ export function createApp() {
   app.use("/plan", planRouter);
   app.use("/reviews", reviewRouter);
   app.use("/week/summary", weeklySummaryRouter);
-  app.use("/match", matchRouter);
   app.use("/conversation", conversationRouter);
   app.use("/longplan", longTermPlanRouter);
   app.use("/user", userRouter);

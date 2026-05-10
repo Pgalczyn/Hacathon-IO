@@ -192,14 +192,6 @@ const MyProfile = () => {
                     <span className="pref-label">Preferred Formats</span>
                     <span>{formatFormats(user.preferences.preferredFormats)}</span>
                   </div>
-                  <div className="pref-item">
-                    <span className="pref-label">Community</span>
-                    <span>
-                  {user.preferences.wantsCommunity
-                      ? "Wants to connect with others"
-                      : "Prefers solo learning"}
-                </span>
-                  </div>
                 </div>
             ) : (
                 <p style={{ color: "gray", fontStyle: "italic" }}>

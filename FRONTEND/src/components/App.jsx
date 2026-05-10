@@ -10,7 +10,6 @@ import PlanView from "./PlanView.jsx";
 import VideoReview from "./VideoReview";
 import TextReview from "./TextReview.jsx";
 import WeeklySummary from "./WeeklySummary.jsx";
-import Match from "./Match.jsx";
 import Conversation from "./Conversation.jsx";
 import LongTermPlan from "./LongTermPlan.jsx";
 // import "./App.css";
@@ -35,7 +34,6 @@ function App() {
               <Route path="/videoreview" element={<VideoReview />} />
               <Route path="/textreview" element={<TextReview />} />
               <Route path="/weeklysummary" element={<WeeklySummary />} />
-              {/* <Route path="/match" element={<Match />} /> */}
               <Route path="/conversation" element={<Conversation />} />
               <Route path="/conversation/:id" element={<Conversation />} />
               <Route path="/longplan" element={<LongTermPlan />} />

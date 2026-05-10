@@ -27,7 +27,6 @@ export class UserService {
                 topics: latestPlan.topicSummary || latestPlan.input.goalText,
                 dailyMinutes: latestPlan.input.dailyMinutes,
                 preferredFormats: latestPlan.input.preferredFormats,
-                wantsCommunity: latestPlan.input.wantsCommunity
             };
         }
 

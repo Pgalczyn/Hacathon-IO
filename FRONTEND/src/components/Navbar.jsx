@@ -67,11 +67,6 @@ const Navbar = () => {
                 Summary
               </Link>
             </li>
-            {/* <li className="nav-item">
-              <Link to="/match" className="btn navbar-btn btn-lg px-4">
-                Match
-              </Link>
-            </li> */}
             <li className="nav-item">
               <Link to="/conversation" className="btn navbar-btn btn-lg px-4">
                 Tutor
