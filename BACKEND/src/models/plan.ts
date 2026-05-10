@@ -31,6 +31,8 @@ export interface IPaperMaterial {
   pdfUrl: string | null;
 }
 
+export type PlanStatus = "draft" | "accepted" | "completed";
+
 export interface IPlan extends Document {
   userId: Types.ObjectId;
   input: {
@@ -40,6 +42,7 @@ export interface IPlan extends Document {
     preferredFormats: string[];
     wantsCommunity: boolean;
   };
+  status: PlanStatus;
   topicSummary: string;
   weeklyFocus: string;
   dailyTimeMinutes: number;
@@ -77,6 +80,16 @@ const PlanSchema: Schema<IPlan> = new Schema(
       dailyMinutes: { type: Number, required: true },
       preferredFormats: { type: [String], required: true },
       wantsCommunity: { type: Boolean, required: true },
+    },
+    // Legacy plans (created before this field) get default "accepted"
+    // — they were already in active use. New plans always start as
+    // "draft" (set explicitly in plan.service.save) and need an
+    // explicit POST /plan/accept transition.
+    status: {
+      type: String,
+      enum: ["draft", "accepted", "completed"],
+      default: "accepted",
+      index: true,
     },
     topicSummary: { type: String, required: true },
     weeklyFocus: { type: String, required: true },

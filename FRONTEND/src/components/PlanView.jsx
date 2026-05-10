@@ -137,6 +137,7 @@ const PlanView = () => {
   const [data, setData] = useState(() => location.state?.plan ?? loadCachedPlan());
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState("");
+  const [busy, setBusy] = useState(""); // "accept" | "regenerate" | "next" | ""
 
   useEffect(() => {
     if (location.state?.plan) {
@@ -213,8 +214,62 @@ const PlanView = () => {
   }
 
   const { validation, plan, materials, planId } = data;
+  const status = data.status ?? "accepted"; // legacy plans default to accepted
+
   const goReview = (route, material) =>
     navigateRouter(route, { state: { material: { ...material, planId: planId ?? null } } });
+
+  const refreshFromBackend = async () => {
+    try {
+      const r = await fetch(`${API_URL}/plan`, { credentials: "include" });
+      if (r.ok) {
+        const j = await r.json();
+        setData(j);
+        try { localStorage.setItem("currentPlan", JSON.stringify(j)); } catch { /* ignore */ }
+      }
+    } catch { /* ignore */ }
+  };
+
+  const handleAccept = async () => {
+    setBusy("accept");
+    try {
+      const r = await fetch(`${API_URL}/plan/accept`, { method: "POST", credentials: "include" });
+      if (!r.ok) {
+        const j = await r.json().catch(() => ({}));
+        setFetchError(j.message || `Failed (${r.status})`);
+        return;
+      }
+      await refreshFromBackend();
+    } finally {
+      setBusy("");
+    }
+  };
+
+  const handleAction = async (path, label) => {
+    setBusy(label);
+    setFetchError("");
+    try {
+      const r = await fetch(`${API_URL}${path}`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      });
+      const j = await r.json();
+      if (!r.ok) {
+        setFetchError(j.message || j.error || `Failed (${r.status})`);
+        return;
+      }
+      // /regenerate and /next return the same shape as /onboarding —
+      // we can drop it straight into local state.
+      setData(j);
+      try { localStorage.setItem("currentPlan", JSON.stringify(j)); } catch { /* ignore */ }
+    } catch (err) {
+      setFetchError(err.message || "Network error");
+    } finally {
+      setBusy("");
+    }
+  };
 
   if (!validation?.accepted || !plan) {
     return (
@@ -236,11 +291,68 @@ const PlanView = () => {
       <div className="row g-4">
         <div className="col-lg-7">
           <div className="card shadow-sm p-4 mb-3" style={{ borderRadius: "16px" }}>
-            <h3 className="fw-bold mb-1">{plan.weekly_focus}</h3>
+            <div className="d-flex justify-content-between align-items-start gap-2 mb-1">
+              <h3 className="fw-bold mb-0">{plan.weekly_focus}</h3>
+              <span
+                className={`badge flex-shrink-0 ${
+                  status === "draft"
+                    ? "bg-warning text-dark"
+                    : status === "completed"
+                      ? "bg-secondary"
+                      : "bg-success"
+                }`}
+              >
+                {status}
+              </span>
+            </div>
             <p className="text-muted">{plan.topic_summary}</p>
-            <div className="small text-muted">
+            <div className="small text-muted mb-3">
               ~{plan.daily_time_minutes} minutes per day · {plan.tasks.length} tasks
             </div>
+
+            {status === "draft" && (
+              <div className="alert alert-warning small mb-3">
+                <strong>Draft plan.</strong> Accept it to commit to this week, or regenerate
+                if you'd like a different take.
+              </div>
+            )}
+
+            <div className="d-flex gap-2 flex-wrap">
+              {status === "draft" && (
+                <>
+                  <button
+                    type="button"
+                    className="btn purple-btn"
+                    onClick={handleAccept}
+                    disabled={busy !== ""}
+                  >
+                    {busy === "accept" ? "Accepting…" : "Accept this plan"}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => handleAction("/plan/regenerate", "regenerate")}
+                    disabled={busy !== ""}
+                  >
+                    {busy === "regenerate" ? "Regenerating…" : "Regenerate"}
+                  </button>
+                </>
+              )}
+              {(status === "accepted" || status === "completed") && (
+                <button
+                  type="button"
+                  className="btn purple-btn"
+                  onClick={() => handleAction("/plan/next", "next")}
+                  disabled={busy !== ""}
+                >
+                  {busy === "next" ? "Generating next week…" : "Generate next week's plan"}
+                </button>
+              )}
+            </div>
+
+            {fetchError && status !== "draft" && (
+              <div className="alert alert-danger small mt-3 mb-0">{fetchError}</div>
+            )}
           </div>
 
           {Object.keys(tasksByDay)

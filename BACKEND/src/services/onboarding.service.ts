@@ -79,6 +79,30 @@ export class OnboardingService {
       planId,
     };
   }
+
+  /** Replace the user's current draft (if any) with a fresh draft generated
+   *  from the same input that was used last time. Use when a user wants a
+   *  different take on the proposed week without retyping the form. */
+  async regenerateForUser(userId: string): Promise<OnboardingResponse> {
+    const input = await planService.getLastInput(userId);
+    if (!input) {
+      throw new Error("No previous plan to regenerate from — fill the onboarding form first.");
+    }
+    await planService.deleteDrafts(userId);
+    return this.run(input, { userId });
+  }
+
+  /** Mark the user's current accepted plan as completed (week is over) and
+   *  generate next week's draft from the same input. The recommendation
+   *  service will fold in their latest reviews automatically. */
+  async nextWeekForUser(userId: string): Promise<OnboardingResponse> {
+    const input = await planService.getLastInput(userId);
+    if (!input) {
+      throw new Error("No previous plan — fill the onboarding form first.");
+    }
+    await planService.complete(userId); // no-op if nothing accepted; harmless
+    return this.run(input, { userId });
+  }
 }
 
 export const onboardingService = new OnboardingService();
