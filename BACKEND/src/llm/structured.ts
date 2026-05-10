@@ -17,6 +17,11 @@ export interface StructuredOptions extends LLMConfig {
   system?: string;
   /** If the first attempt fails schema validation, retry once with a stricter reprompt. */
   retryOnFailure?: boolean;
+  /** withStructuredOutput method. "jsonMode" sidesteps Groq's tool-call
+   *  validator (which silently rejects valid output for some schema shapes
+   *  with a generic "Failed to call a function" error) and just asks for
+   *  valid JSON; Zod still validates client-side. */
+  method?: "functionCalling" | "jsonMode" | "jsonSchema";
 }
 
 export async function invokeStructured<T extends z.ZodType>(
@@ -24,9 +29,11 @@ export async function invokeStructured<T extends z.ZodType>(
   schema: T,
   options: StructuredOptions = {},
 ): Promise<z.infer<T>> {
-  const { system, retryOnFailure = true, ...llmConfig } = options;
+  const { system, retryOnFailure = true, method, ...llmConfig } = options;
   const llm = createLLM(llmConfig);
-  const structured = llm.withStructuredOutput(schema);
+  const structured = method
+    ? llm.withStructuredOutput(schema, { method })
+    : llm.withStructuredOutput(schema);
 
   const baseMessages: BaseMessage[] = [];
   if (system) baseMessages.push(new SystemMessage(system));

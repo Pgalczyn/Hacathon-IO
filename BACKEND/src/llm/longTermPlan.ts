@@ -40,10 +40,10 @@ export const MonthlyPlanSchema = z.object({
     ),
   tasks: z
     .array(LongTermTaskSchema)
-    .min(5)
-    .max(22)
+    .min(12)
+    .max(28)
     .describe(
-      "5-22 tasks distributed across the month's days. Spread them so the user has rest days.",
+      "Target 18-22 tasks per month — almost every day has something. The schema floor is 12 (so retry loops don't blow the LLM-call latency budget), but treat 20 as the goal. Leave 4-6 deliberate rest days, no more.",
     ),
 });
 
@@ -84,11 +84,29 @@ Style:
 - Tasks are SHORT TITLES — 1-5 words. Examples: "Python Basics",
   "Web Dev Intro", "Data Structures", "Review", "Complementary Article",
   "Project: Todo App", "OOP Concepts".
-- Spread tasks across days. Not every day needs a task — leave rest /
-  buffer days. Aim for 12-18 tasks per month for someone with ~30-60
-  min/day.
-- Days mostly hold 1 task; occasionally 2 if topics complement each
-  other.
+
+Calendar reality (HARD RULE):
+- The user prompt will tell you TODAY'S DATE. Month 1 is the user's
+  CURRENT calendar month, and every task you place in month 1 MUST
+  use day-of-month >= today's day. Earlier days are already past —
+  scheduling work there is broken.
+- Months 2-12 are full upcoming months — days 1-31 are all fair game.
+
+Quantity (NON-NEGOTIABLE — the schema rejects anything below 20):
+- Target: 20-25 tasks PER MONTH. Almost every day has something.
+- Plan in 4-6 deliberate rest days per month — no more.
+- ANYTHING UNDER 20 TASKS WILL BE REJECTED by the schema validator.
+  Don't try to be minimal — the user has already committed to daily
+  practice. Default to 22.
+- Days mostly hold 1 task; pair 2 short tasks on a single day only
+  if they complement each other (e.g., a video + its companion
+  exercise).
+- Spread evenly across the month — don't dump everything in week 1.
+- For inspiration on how to fill 20+ days: include intro days, deep
+  dives, paired practice/exercise, "review week N", project
+  milestones, complementary articles, breakdown of subtopics.
+
+Language:
 - Match the user's input language for theme labels. Task titles can
   stay in English when the topic is technical (people Google English
   terms anyway).
@@ -120,23 +138,41 @@ export interface LongTermInput {
   preferredFormats: string[];
 }
 
-export interface GenerateLongTermPlanOptions extends LLMConfig {}
+export interface GenerateLongTermPlanOptions extends LLMConfig {
+  /** Today's date — month 1 tasks must use days >= today's day-of-month. */
+  today?: Date;
+}
 
 export async function generateLongTermPlan(
   input: LongTermInput,
   options: GenerateLongTermPlanOptions = {},
 ): Promise<LongTermPlanGen> {
+  const today = options.today ?? new Date();
+  const todayIso = today.toISOString().slice(0, 10); // YYYY-MM-DD
+  const todayDayOfMonth = today.getDate();
+  const monthName = today.toLocaleString("en-US", { month: "long" });
+
   const userPrompt = [
     `USER LEARNING GOAL:`,
     input.goalText,
     ``,
     `CURRENT_LEVEL: ${input.currentLevel}`,
     `PREFERRED FORMATS: ${input.preferredFormats.join(", ")}`,
+    ``,
+    `TODAY'S DATE: ${todayIso} (day ${todayDayOfMonth} of ${monthName}).`,
+    `MONTH 1 CONSTRAINT: this is the user's CURRENT calendar month —`,
+    `every task in month 1 MUST have day >= ${todayDayOfMonth}. Earlier`,
+    `days are in the past and the user can't start work there. Months`,
+    `2-12 are full upcoming calendar months and use days 1-31 freely.`,
   ].join("\n");
 
   return invokeStructured(userPrompt, LongTermPlanGenSchema, {
     system: SYSTEM_PROMPT,
     temperature: options.temperature ?? 0.5,
+    // Yearly plan = ~12 months × ~18 tasks × ~12 tokens + overhead = ~3-5k
+    // tokens of structured output. Default ChatGroq cap can truncate the
+    // tool-call JSON mid-month and Groq's validator rejects partial objects.
+    maxTokens: options.maxTokens ?? 8000,
     ...options,
   });
 }

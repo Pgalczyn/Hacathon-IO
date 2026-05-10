@@ -32,6 +32,16 @@ function getJwtSecret(): string {
 
 export class AuthService {
   async register(input: RegisterInput): Promise<IUser> {
+    const birthDate = new Date(input.dateOfBirth);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    if (age < 13) {
+      throw new AuthError("You must be at least 13 years old to register!", 400);
+    }
     const newUser = new User(input);
     return newUser.save();
   }

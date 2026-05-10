@@ -52,10 +52,9 @@ export const PlanSchema = z.object({
   daily_time_minutes: z.number().int().positive(),
   tasks: z
     .array(LearningTaskSchema)
-    .min(1)
     .max(21)
     .describe(
-      "When accepted, ideally 7-14 tasks covering all 7 days. Each day gets at least one task.",
+      "When accepted: ideally 7-14 tasks covering all 7 days, each day with at least one task. When rejected: empty array []. Either way, this field must be an array (never null).",
     ),
 });
 

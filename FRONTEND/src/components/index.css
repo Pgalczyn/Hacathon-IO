@@ -5,6 +5,9 @@
   font-weight: 600;
   transition: all 0.2s ease;
 }
+.bg-purple {
+  background-color: #6f42c1;
+}
 
 .purple-btn:hover {
   background-color: #9944fc !important;
@@ -415,4 +418,208 @@ body {
   border-color: #d1aaff;
   cursor: not-allowed;
   box-shadow: none;
+}
+:root {
+  --purple-main: #9f46ed;
+  --purple-dark: #6f42c1;
+  --purple-light: #f6eeff;
+  --purple-soft: #faf5ff;
+
+  --text-main: #1f1f35;
+  --text-muted: #7b7b95;
+
+  --border-soft: #ece7f5;
+}
+
+body {
+  font-family: "Poppins", sans-serif !important;
+  background: #fcfbff;
+  color: var(--text-main);
+}
+
+/* =========================
+   GLOBAL CARDS
+========================= */
+
+.modern-card {
+  border: none !important;
+  border-radius: 22px !important;
+  background: white;
+  box-shadow: 0 8px 30px rgba(111, 66, 193, 0.08);
+}
+
+.task-card {
+  border: none !important;
+  border-radius: 20px !important;
+  background: white;
+  box-shadow: 0 6px 24px rgba(111, 66, 193, 0.08);
+
+  transition: 0.2s ease;
+}
+
+.task-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(111, 66, 193, 0.12);
+}
+
+.task-description {
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.task-reason {
+  color: #8f8fa8;
+}
+
+/* =========================
+   BADGES
+========================= */
+
+.custom-badge {
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* =========================
+   MATERIALS PANEL
+========================= */
+
+.materials-panel {
+  position: sticky;
+  top: 20px;
+}
+
+/* =========================
+   FORM
+========================= */
+
+.form-control {
+  border-radius: 14px !important;
+  border: 1px solid var(--border-soft) !important;
+  padding: 12px 14px !important;
+}
+
+.form-control:focus {
+  border-color: var(--purple-main) !important;
+  box-shadow: 0 0 0 4px rgba(159, 70, 237, 0.12) !important;
+}
+
+/* =========================
+   RANGE
+========================= */
+
+.form-range::-webkit-slider-thumb {
+  background: var(--purple-main) !important;
+}
+
+.form-range::-moz-range-thumb {
+  background: var(--purple-main) !important;
+}
+
+/* =========================
+   CHECKBOXES
+========================= */
+
+.form-check-input:checked {
+  background-color: var(--purple-main) !important;
+  border-color: var(--purple-main) !important;
+}
+
+/* =========================
+   SECTION TITLES
+========================= */
+
+.section-title {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.section-subtitle {
+  color: var(--text-muted);
+}
+/* PAGE WRAPPER */
+.home-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #faf7ff 0%, #ffffff 35%, #ffffff 100%);
+}
+
+/* HERO */
+.home-hero {
+  position: relative;
+  width: 100%;
+  background: linear-gradient(135deg, #6f42c1 0%, #9f46ed 55%, #d1aaff 100%);
+  overflow: hidden;
+  padding: 70px 20px;
+}
+
+.home-hero-content {
+  max-width: 850px;
+  margin: 0 auto;
+  text-align: center;
+  color: white;
+}
+
+.home-hero-content h1 {
+  font-size: clamp(2.4rem, 5vw, 4.2rem);
+  font-weight: 800;
+  margin-bottom: 12px;
+  line-height: 1.1;
+}
+
+.home-hero-content p {
+  font-size: 1.1rem;
+  opacity: 0.95;
+  margin: 0;
+}
+
+/* MAIN */
+.home-main {
+  padding-bottom: 60px;
+}
+
+.home-section {
+  padding-top: 20px;
+}
+
+/* GLOW EFFECTS */
+.home-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(10px);
+}
+
+.home-glow-right {
+  width: 320px;
+  height: 320px;
+  background: rgba(255, 255, 255, 0.12);
+  top: -120px;
+  right: -80px;
+}
+
+.home-glow-left {
+  width: 220px;
+  height: 220px;
+  background: rgba(255, 255, 255, 0.08);
+  bottom: -80px;
+  left: -60px;
+}
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-content {
+  flex: 1;
+  width: 100%;
+  display: flex;
+}
+.app-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
 }
