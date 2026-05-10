@@ -31,7 +31,7 @@ export class YouTubeSource implements MaterialSource<string, VideoResult[]> {
         videoId: item.id.videoId,
         title: item.snippet.title,
         thumbnail: item.snippet.thumbnails.high.url,
-        embedUrl: `https://www.youtube.com/watch?=${item.id.videoId}`,
+        embedUrl: `https://www.youtube.com/watch?v=${item.id.videoId}`,
       }));
     } catch (err) {
       console.error(`YouTube error for "${query}":`, (err as Error).message);
