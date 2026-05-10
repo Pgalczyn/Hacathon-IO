@@ -13,6 +13,7 @@ import TextReview from "./TextReview.jsx";
 import WeeklySummary from "./WeeklySummary.jsx";
 import Match from "./Match.jsx";
 import Conversation from "./Conversation.jsx";
+import LongTermPlan from "./LongTermPlan.jsx";
 // import "./App.css";
 import MyProfile from "./MyProfile.jsx";
 import "./index.css";
@@ -38,6 +39,7 @@ function App() {
                 <Route path="/match" element={<Match />} />
                 <Route path="/conversation" element={<Conversation />} />
                 <Route path="/conversation/:id" element={<Conversation />} />
+                <Route path="/longplan" element={<LongTermPlan />} />
               </Routes>
             </div>
           </div>

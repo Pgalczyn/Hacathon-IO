@@ -63,6 +63,11 @@ const Navbar = () => {
               </Link>
             </li>
             <li className="nav-item">
+              <Link to="/longplan" className="btn navbar-btn btn-lg px-4">
+                Year Plan
+              </Link>
+            </li>
+            <li className="nav-item">
               <Link to="/weeklysummary" className="btn navbar-btn btn-lg px-4">
                 Summary
               </Link>
