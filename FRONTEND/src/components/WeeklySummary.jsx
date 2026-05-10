@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import WelcomeStartCard from "./WelcomeStartCard.jsx";
 import "./index.css";
 
 import API_URL from "../api.js";
@@ -133,11 +134,11 @@ const QuizQuestion = ({ q, value, onChange, locked, grade }) => {
 };
 
 const WeeklySummary = () => {
-  const navigate = useNavigate();
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [unauthorized, setUnauthorized] = useState(false);
+  const [noPlan, setNoPlan] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [answers, setAnswers] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -145,9 +146,9 @@ const WeeklySummary = () => {
   const [updatingPlan, setUpdatingPlan] = useState(false);
 
   // Gate: a weekly summary only makes sense once the user has actually
-  // filled the questionnaire and has a plan. If /plan 404s, send them to
-  // the form instead of letting them stare at "Generate weekly summary"
-  // (which would just blow up with "No plan found to summarize").
+  // filled the questionnaire and has a plan. If /plan 404s we render the
+  // same Welcome card as Home — same look & feel everywhere the user
+  // hasn't started yet.
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -162,7 +163,8 @@ const WeeklySummary = () => {
           return;
         }
         if (planRes.status === 404) {
-          navigate("/learningform", { replace: true });
+          setNoPlan(true);
+          setLoading(false);
           return;
         }
 
@@ -189,7 +191,7 @@ const WeeklySummary = () => {
     return () => {
       cancelled = true;
     };
-  }, [navigate]);
+  }, []);
 
   const handleGenerate = async () => {
     setError("");
@@ -289,6 +291,10 @@ const WeeklySummary = () => {
       setSubmitting(false);
     }
   };
+
+  if (noPlan) {
+    return <WelcomeStartCard />;
+  }
 
   if (unauthorized) {
     return (

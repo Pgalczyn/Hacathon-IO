@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import WelcomeStartCard from "./WelcomeStartCard.jsx";
 import "./index.css";
 
 import API_URL from "../api.js";
@@ -169,12 +170,12 @@ const Calendar = ({ plan, monthIndex, onPrev, onNext }) => {
 };
 
 const LongTermPlan = () => {
-  const navigate = useNavigate();
   const [plan, setPlan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
   const [unauthorized, setUnauthorized] = useState(false);
+  const [noPlan, setNoPlan] = useState(false);
   const [monthIndex, setMonthIndex] = useState(1);
 
   // Onboarding kicks off yearly generation in the background and returns
@@ -237,7 +238,8 @@ const LongTermPlan = () => {
           return;
         }
         if (planRes.status === 404) {
-          navigate("/learningform", { replace: true });
+          setNoPlan(true);
+          setLoading(false);
           return;
         }
         // Weekly plan exists — yearly might still be brewing in background.
@@ -253,7 +255,7 @@ const LongTermPlan = () => {
       cancelled = true;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [navigate]);
+  }, []);
 
   const handleGenerate = async () => {
     setError("");
@@ -282,6 +284,10 @@ const LongTermPlan = () => {
       setGenerating(false);
     }
   };
+
+  if (noPlan) {
+    return <WelcomeStartCard />;
+  }
 
   if (unauthorized) {
     return (

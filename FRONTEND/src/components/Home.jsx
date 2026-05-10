@@ -2,6 +2,7 @@ import "./index.css";
 import { useEffect, useState } from "react";
 import DayView from "./DayView";
 import RecommendedMaterials from "./RecommendedMaterials";
+import WelcomeStartCard from "./WelcomeStartCard.jsx";
 import { Link } from "react-router-dom";
 import { useAuth } from "./AuthContext.jsx";
 
@@ -77,23 +78,7 @@ const Home = () => {
   }
 
   if (planStatus === "none") {
-    return (
-      <div className="container py-5">
-        <div
-          className="card shadow-sm p-4 text-center mx-auto"
-          style={{ maxWidth: "560px", borderRadius: "16px" }}
-        >
-          <h3 className="fw-bold mb-3">Welcome!</h3>
-          <p className="text-muted mb-4">
-            Tell us what you want to learn and we'll build a personalized
-            weekly plan plus a 12-month roadmap on a calendar.
-          </p>
-          <Link to="/learningform" className="btn purple-btn btn-lg">
-            Start the questionnaire
-          </Link>
-        </div>
-      </div>
-    );
+    return <WelcomeStartCard />;
   }
 
   return (

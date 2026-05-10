@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
+import WelcomeStartCard from "./WelcomeStartCard.jsx";
 import "./index.css";
 
 import API_URL from "../api.js";
@@ -37,7 +38,21 @@ const Conversation = () => {
   const [error, setError] = useState("");
   const [input, setInput] = useState("");
   const [unauthorized, setUnauthorized] = useState(false);
+  const [noPlan, setNoPlan] = useState(false);
   const scrollRef = useRef(null);
+
+  // Gate on weekly plan: tutoring needs a plan to discuss. If none yet,
+  // render the same Welcome CTA as Home / Learning / Summary.
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API_URL}/plan`, { credentials: "include" })
+      .then((r) => {
+        if (cancelled) return;
+        if (r.status === 404) setNoPlan(true);
+      })
+      .catch(() => { /* fall through to existing flow */ });
+    return () => { cancelled = true; };
+  }, []);
 
   // Initial load: existing conversation by id, or render empty state with start button
   useEffect(() => {
@@ -143,6 +158,10 @@ const Conversation = () => {
       setSending(false);
     }
   };
+
+  if (noPlan) {
+    return <WelcomeStartCard />;
+  }
 
   if (unauthorized) {
     return (
