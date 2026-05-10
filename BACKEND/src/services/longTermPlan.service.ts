@@ -21,6 +21,15 @@ export class LongTermPlanService {
   async generateForUser(args: GenerateLongTermArgs): Promise<ILongTermPlan> {
     const input = await this.resolveInput(args);
     const today = startOfToday();
+
+    // Wipe old yearly plans for this user up front so /longplan returns
+    // 404 during the ~30s LLM call. /learning's polling loader then
+    // auto-swaps to the fresh calendar as soon as it's saved. Without
+    // this the user gets stuck staring at the old plan since the page
+    // fetches /longplan once on mount and the latest-by-createdAt is
+    // still the old doc until the new one is written.
+    await LongTermPlan.deleteMany({ userId: args.userId });
+
     const llm = await generateLongTermPlan(input, { today });
 
     const doc = new LongTermPlan({
