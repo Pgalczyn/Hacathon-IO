@@ -66,3 +66,19 @@ export {
   type GenerateSummaryInput,
   type GradeAnswersInput,
 } from "./weeklySummary.js";
+export {
+  generateConversationOpener,
+  replyInConversation,
+  type ConversationContext,
+  type ChatMessage,
+} from "./conversation.js";
+export {
+  generateLongTermPlan,
+  LongTermPlanGenSchema,
+  MonthlyPlanSchema,
+  LongTermTaskSchema,
+  type LongTermPlanGen,
+  type MonthlyPlan,
+  type LongTermTask,
+  type LongTermInput,
+} from "./longTermPlan.js";

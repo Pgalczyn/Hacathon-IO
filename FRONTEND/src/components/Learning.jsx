@@ -1,17 +1,9 @@
-import { Link } from "react-router-dom";
-import "./index.css";
+import LongTermPlan from "./LongTermPlan.jsx";
 
-const Learning = () => {
-  return (
-    <div style={{ padding: "20px" }}>
-      <div className="start-learning">
-        <p>
-          {" "}
-          <Link to="/learningform">Set up your learning plan here</Link>
-        </p>
-      </div>
-    </div>
-  );
-};
+/**
+ * The "Learning" entry point in the navbar — shows the user's
+ * 12-month plan as a monthly calendar with prev/next navigation.
+ */
+const Learning = () => <LongTermPlan />;
 
 export default Learning;

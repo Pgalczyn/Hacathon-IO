@@ -37,6 +37,11 @@ export class AuthController {
     }
   };
 
+  logout = (_req: Request, res: Response): void => {
+    res.clearCookie("token", { httpOnly: true });
+    res.status(200).json({ message: "Logged out" });
+  };
+
   loggedInStatus = (req: Request, res: Response): void => {
     const token = req.cookies?.token as string | undefined;
     if (!token) {

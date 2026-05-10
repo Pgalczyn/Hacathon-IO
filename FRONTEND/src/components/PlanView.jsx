@@ -250,9 +250,14 @@ const PlanView = () => {
               <DayBlock key={day} day={day} tasks={tasksByDay[day]} planId={planId} />
             ))}
 
-          <Link to="/learningform" className="btn btn-outline-secondary mt-2">
-            Generate a new plan
-          </Link>
+          <div className="d-flex gap-2 mt-2 flex-wrap">
+            <Link to="/learningform" className="btn btn-outline-secondary">
+              Generate a new plan
+            </Link>
+            <Link to="/conversation" className="btn btn-outline-primary">
+              Talk to your tutor
+            </Link>
+          </div>
         </div>
 
         <div className="col-lg-5">

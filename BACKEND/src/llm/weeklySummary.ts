@@ -6,28 +6,29 @@ import type { LLMConfig } from "./provider.js";
  * Schemas
  * ========================================================== */
 
+// Groq's tool-call validator chokes on `.nullable()` (same bug as in
+// learningPlan), so each field is always present and we use sentinel
+// values for the "not applicable" case. The wrapper below converts
+// sentinels back to null in the public type.
 export const QuizQuestionSchema = z.object({
   id: z.string().describe('Stable id like "q1", "q2", ...'),
   type: z.enum(["mcq", "open"]),
   question: z.string(),
   options: z
     .array(z.string())
-    .nullable()
     .describe(
-      "Multiple-choice options. Required for type='mcq' (3 or 4 entries). MUST be null for type='open'.",
+      'For type="mcq": 3 or 4 options. For type="open": empty array [].',
     ),
   correctOption: z
     .number()
     .int()
-    .nullable()
     .describe(
-      "0-based index into `options`. Required for type='mcq'. MUST be null for type='open'.",
+      'For type="mcq": 0-based index into `options`. For type="open": -1.',
     ),
   rubric: z
     .string()
-    .nullable()
     .describe(
-      "1-2 sentence rubric describing what a good answer covers. Required for type='open'. MUST be null for type='mcq'.",
+      'For type="open": 1-2 sentence rubric describing a good answer. For type="mcq": empty string "".',
     ),
 });
 
@@ -46,8 +47,47 @@ export const WeeklySummaryGenSchema = z.object({
     ),
 });
 
-export type QuizQuestion = z.infer<typeof QuizQuestionSchema>;
-export type WeeklySummaryGen = z.infer<typeof WeeklySummaryGenSchema>;
+// Internal: raw shape the LLM returns (with sentinels: empty array,
+// -1, empty string).
+export type RawQuizQuestion = z.infer<typeof QuizQuestionSchema>;
+export type RawWeeklySummaryGen = z.infer<typeof WeeklySummaryGenSchema>;
+
+// Public: shape callers consume — null for "not applicable" instead
+// of sentinels. The wrapper does the conversion.
+export interface QuizQuestion {
+  id: string;
+  type: "mcq" | "open";
+  question: string;
+  options: string[] | null;
+  correctOption: number | null;
+  rubric: string | null;
+}
+
+export interface WeeklySummaryGen {
+  summaryMarkdown: string;
+  quiz: QuizQuestion[];
+}
+
+function normalizeQuestion(raw: RawQuizQuestion): QuizQuestion {
+  if (raw.type === "mcq") {
+    return {
+      id: raw.id,
+      type: "mcq",
+      question: raw.question,
+      options: raw.options,
+      correctOption: raw.correctOption,
+      rubric: null,
+    };
+  }
+  return {
+    id: raw.id,
+    type: "open",
+    question: raw.question,
+    options: null,
+    correctOption: null,
+    rubric: raw.rubric,
+  };
+}
 
 export const QuizGradingSchema = z.object({
   grades: z
@@ -142,11 +182,16 @@ export async function generateWeeklySummary(
     reviewLines,
   ].join("\n");
 
-  return invokeStructured(userPrompt, WeeklySummaryGenSchema, {
+  const raw = await invokeStructured(userPrompt, WeeklySummaryGenSchema, {
     system: GENERATE_SYSTEM_PROMPT,
     temperature: options.temperature ?? 0.5,
     ...options,
   });
+
+  return {
+    summaryMarkdown: raw.summaryMarkdown,
+    quiz: raw.quiz.map(normalizeQuestion),
+  };
 }
 
 /* ==========================================================

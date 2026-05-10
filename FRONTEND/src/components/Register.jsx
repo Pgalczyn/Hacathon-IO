@@ -34,20 +34,16 @@ const Register = () => {
             const data = await response.json();
 
             if (response.ok) {
-                // 3. JEŚLI BACKEND ODPOWIEDZIAŁ SUKCESEM:
                 console.log('Zarejestrowano!', data);
-                alert("Konto stworzone pomyślnie!");
-                navigate('/'); // Teraz navigate ma sens - wracamy na stronę główną
+                alert("Konto stworzone pomyślnie! Zaloguj się.");
+                navigate('/login');
             } else {
-                // 4. JEŚLI BACKEND ZWRÓCIŁ BŁĄD (np. email już istnieje):
                 alert(`Błąd: ${data.message}`);
             }
         } catch (error) {
             console.error('Błąd połączenia z serwerem:', error);
             alert("Nie udało się połączyć z serwerem.");
         }
-
-        navigate('/');
     };
 
 
