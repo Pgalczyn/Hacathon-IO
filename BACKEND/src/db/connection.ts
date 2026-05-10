@@ -1,7 +1,5 @@
 import mongoose from "mongoose";
 
-const MONGO_URI = process.env.MONGO_URI ?? "mongodb://localhost:27017/HacathonDB";
-
 mongoose.connection.on("error", (err) => {
   console.error(`MongoDB error: ${err}`);
 });
@@ -17,6 +15,13 @@ mongoose.connection.on("disconnected", () => {
  * /materials/* etc. keep working.
  */
 export async function connectDatabase(): Promise<void> {
+  const MONGO_URI = process.env.MONGO_URI;
+
+  if (!MONGO_URI) {
+    console.error("⛔ Bląd: Brak zmiennej MONGO_URI w pliku .env!");
+    return;
+  }
+
   try {
     await mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 3000 });
     console.log("✅ Connected to MongoDB");
