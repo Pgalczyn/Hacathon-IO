@@ -144,7 +144,7 @@ const Calendar = ({ plan, monthIndex, onPrev, onNext }) => {
 
       <div
         className="d-grid mb-2"
-        style={{ gridTemplateColumns: "repeat(7, 1fr)", gap: 8 }}
+        style={{ gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 8 }}
       >
         {WEEKDAYS.map((d) => (
           <div key={d} className="text-center fw-semibold small text-muted">
@@ -155,7 +155,7 @@ const Calendar = ({ plan, monthIndex, onPrev, onNext }) => {
 
       <div
         className="d-grid"
-        style={{ gridTemplateColumns: "repeat(7, 1fr)", gap: 8 }}
+        style={{ gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 8 }}
       >
         {cells.map((c) =>
           c.blank ? (
