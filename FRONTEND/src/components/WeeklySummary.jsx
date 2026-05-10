@@ -279,14 +279,19 @@ const WeeklySummary = () => {
               {error && <div className="alert alert-danger small">{error}</div>}
 
               {attempt ? (
-                <div className="alert alert-info">
-                  <div className="fw-semibold">
-                    Total score: {Math.round(attempt.totalScore * 100)}%
+                <>
+                  <div className="alert alert-info">
+                    <div className="fw-semibold">
+                      Total score: {Math.round(attempt.totalScore * 100)}%
+                    </div>
+                    <div className="small text-muted">
+                      See feedback under each question.
+                    </div>
                   </div>
-                  <div className="small text-muted">
-                    See feedback under each question.
-                  </div>
-                </div>
+                  <Link to="/conversation" className="btn btn-outline-primary w-100">
+                    Talk to your tutor about it
+                  </Link>
+                </>
               ) : (
                 <button type="submit" className="btn purple-btn w-100" disabled={submitting}>
                   {submitting ? "Grading…" : "Submit answers"}

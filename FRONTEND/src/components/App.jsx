@@ -12,6 +12,7 @@ import VideoReview from "./VideoReview";
 import TextReview from "./TextReview.jsx";
 import WeeklySummary from "./WeeklySummary.jsx";
 import Match from "./Match.jsx";
+import Conversation from "./Conversation.jsx";
 // import "./App.css";
 import MyProfile from "./MyProfile.jsx";
 import "./index.css";
@@ -35,6 +36,8 @@ function App() {
                 <Route path="/textreview" element={<TextReview />} />
                 <Route path="/weeklysummary" element={<WeeklySummary />} />
                 <Route path="/match" element={<Match />} />
+                <Route path="/conversation" element={<Conversation />} />
+                <Route path="/conversation/:id" element={<Conversation />} />
               </Routes>
             </div>
           </div>

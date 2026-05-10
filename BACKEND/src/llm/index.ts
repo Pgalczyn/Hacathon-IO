@@ -66,3 +66,9 @@ export {
   type GenerateSummaryInput,
   type GradeAnswersInput,
 } from "./weeklySummary.js";
+export {
+  generateConversationOpener,
+  replyInConversation,
+  type ConversationContext,
+  type ChatMessage,
+} from "./conversation.js";
