@@ -105,7 +105,10 @@ const LearningForm = () => {
       } catch {
         // ignore quota / disabled storage
       }
-      navigate("/plan", { state: { plan: data } });
+      // Onboarding now generates BOTH the weekly plan and the 12-month plan
+      // in one shot, so we land directly on the yearly calendar. The weekly
+      // plan is still accessible via /plan from the navbar.
+      navigate("/learning", { state: { plan: data } });
     } catch (err) {
       setServerError(err.message || "Network error — is the backend running?");
     } finally {

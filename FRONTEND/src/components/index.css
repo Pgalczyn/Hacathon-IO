@@ -49,17 +49,10 @@ body {
 }
 
 .auth-link {
-  color: #6f42c1 !important;
-  font-weight: 600 !important;
-  text-decoration: none !important;
-  transition: 0.2s ease !important;
-}
-
-.auth-link-text-only {
-  color: #6f42c1 !important;
-  font-weight: 600 !important;
-  text-decoration: none !important;
-  transition: 0.2s ease !important;
+  color: #6f42c1;
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.2s ease;
 }
 a.auth-link {
   color: #6f42c1;
@@ -102,6 +95,344 @@ a.auth-link:hover {
   background-color: #f1e4ff !important;
 }
 
+/* ===== PROFILE PAGE LAYOUT ===== */
+
+ Center the whole profile page
+.auth-switch {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  padding: 40px 20px;
+  min-height: 100vh;
+  background-color: #ffffff;
+  width: 100%;
+}
+
+/* ===== PROFILE CARD ===== */
+.auth-switch .profile-card {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  max-width: 650px;
+  width: 100%;
+  box-shadow: 0 4px 20px rgba(159, 70, 237, 0.1);
+  border: 1px solid #f1e4ff;
+}
+
+/* Header */
+.auth-switch .profile-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.auth-switch .profile-avatar {
+  width: 72px;
+  height: 72px;
+  background: #9f46ed;                /* your purple */
+  color: white;
+  font-size: 28px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin: 0 auto 12px;
+}
+
+.auth-switch .profile-header h2 {
+  margin: 0 0 4px;
+  font-size: 24px;
+  color: #0f1364;                     /* your dark navy */
+}
+
+.auth-switch .profile-email {
+  color: #6f42c1;                     /* purple */
+  font-size: 14px;
+  margin: 4px 0 8px;
+}
+
+.auth-switch .profile-status {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #f1e4ff;               /* light purple bg */
+  color: #6f42c1;                     /* purple text */
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Sections */
+.auth-switch .profile-section {
+  margin-bottom: 30px;
+}
+
+.auth-switch .profile-section h3 {
+  font-size: 18px;
+  color: #4f5295;                     /* muted purple */
+  border-bottom: 2px solid #f1e4ff;
+  padding-bottom: 6px;
+  margin-bottom: 15px;
+}
+
+/* Personal Info detail grid */
+.auth-switch .detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.auth-switch .detail-item label {
+  font-weight: 500;
+  color: #4f5295;                     /* muted purple */
+  display: block;
+  margin-bottom: 4px;
+}
+
+.auth-switch .detail-item p {
+  color: #0f1364;                     /* dark navy */
+  margin: 0;
+  background: #faf5ff;                /* very light purple */
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+/* Preferences grid */
+.auth-switch .preferences-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.auth-switch .pref-item {
+  display: flex;
+  flex-direction: column;
+  background: #faf5ff;                /* very light purple */
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #f1e4ff;
+}
+
+.auth-switch .pref-label {
+  font-weight: 500;
+  color: #4f5295;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.auth-switch .pref-value {
+  color: #0f1364;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 15px;
+  border: 1px solid #e9d5ff;          /* soft purple border */
+}
+
+/* Statistics grid */
+.auth-switch .stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+}
+
+.auth-switch .stat-item {
+  background: #faf5ff;
+  border-radius: 12px;
+  padding: 20px 16px;
+  text-align: center;
+  border: 1px solid #f1e4ff;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.auth-switch .stat-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(159, 70, 237, 0.15);
+}
+
+.auth-switch .stat-icon {
+  font-size: 24px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.auth-switch .stat-number {
+  display: block;
+  font-size: 28px;
+  font-weight: 700;
+  color: #9f46ed;                     /* purple accent */
+}
+
+.auth-switch .stat-label {
+  font-size: 13px;
+  color: #6f42c1;
+  margin-top: 4px;
+}
+
+/* Edit button – purple outline style (matches your .purple-outline-btn) */
+.auth-switch .edit-profile-btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  color: #9f46ed;
+  border: 1px solid #9f46ed;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 20px;
+}
+
+.auth-switch .edit-profile-btn:hover {
+  background-color: #9f46ed;
+  color: white;
+}
+
+/* Mobile adjustments */
+@media (max-width: 500px) {
+  .auth-switch .detail-grid,
+  .auth-switch .preferences-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Modal Styles ---------- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 19, 100, 0.4); /* Navy-tinted semi-transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 8px 30px rgba(159, 70, 237, 0.15); /* Soft purple shadow */
+  border: 1px solid #f1e4ff; /* Light purple border */
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 20px;
+  color: #4f5295; /* Muted purple */
+  border-bottom: 2px solid #f1e4ff;
+  padding-bottom: 10px;
+}
+
+.modal-error {
+  color: #d9534f;
+  background: #fdf7f7;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 15px;
+  border: 1px solid #f5c6cb;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modal-field label {
+  font-size: 14px;
+  color: #4f5295; /* Muted purple */
+  font-weight: 500;
+}
+
+.modal-field input {
+  padding: 10px 14px;
+  background: #faf5ff; /* Very light purple bg */
+  border: 1px solid #e9d5ff; /* Soft purple border */
+  border-radius: 8px;
+  font-size: 15px;
+  color: #0f1364; /* Dark navy text */
+  outline: none;
+  font-family: "Poppins", sans-serif;
+  transition: all 0.2s ease;
+}
+
+.modal-field input:focus {
+  border-color: #9f46ed; /* Primary purple */
+  box-shadow: 0 0 0 3px rgba(159, 70, 237, 0.15); /* Purple focus ring */
+  background: white;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.btn-cancel {
+  flex: 1;
+  padding: 12px;
+  background: #f1e4ff; /* Light purple */
+  color: #6f42c1; /* Purple text */
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: "Poppins", sans-serif;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel:hover {
+  background: #e9d5ff;
+  color: #4c2a91;
+}
+
+.btn-save {
+  flex: 1;
+  padding: 12px;
+  background: #9f46ed; /* Primary purple */
+  color: white;
+  border: 1px solid #9f46ed;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: "Poppins", sans-serif;
+  transition: all 0.2s ease;
+}
+
+.btn-save:hover {
+  background: #9944fc;
+  border-color: #9944fc;
+  box-shadow: 0 4px 12px rgba(159, 70, 237, 0.2);
+}
+
+.btn-save:disabled {
+  background: #d1aaff; /* Light muted purple when disabled */
+  border-color: #d1aaff;
+  cursor: not-allowed;
+  box-shadow: none;
+}
 :root {
   --purple-main: #9f46ed;
   --purple-dark: #6f42c1;

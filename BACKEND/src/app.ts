@@ -12,6 +12,7 @@ import { matchRouter } from "./routes/match.routes.js";
 import { conversationRouter } from "./routes/conversation.routes.js";
 import { longTermPlanRouter } from "./routes/longTermPlan.routes.js";
 import { optionalAuth } from "./middleware/auth.middleware.js";
+import {userRouter} from "./routes/user.routes.js";
 
 export function createApp() {
   const app = express();
@@ -38,6 +39,7 @@ export function createApp() {
   app.use("/match", matchRouter);
   app.use("/conversation", conversationRouter);
   app.use("/longplan", longTermPlanRouter);
+  app.use("/user", userRouter);
 
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
     console.error("Global Error:", err);
