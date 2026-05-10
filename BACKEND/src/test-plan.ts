@@ -95,6 +95,78 @@ const cases: TestCase[] = [
       currentLevel: "intermediate",
     },
   },
+  {
+    label: "Reject: vanity / princess",
+    expect: "reject",
+    input: {
+      goalText:
+        "Chcę nauczyć się jak być piękną i wyglądać jak księżniczka, żeby wszyscy się we mnie zakochiwali.",
+      dailyMinutes: 30,
+      preferredFormats: ["video"],
+      wantsCommunity: false,
+      currentLevel: "complete_beginner",
+    },
+  },
+  {
+    label: "Accept: makeup artistry (real craft)",
+    expect: "accept",
+    input: {
+      goalText:
+        "Chcę nauczyć się makeup artistry na poziomie profesjonalnym — kolor theory, contouring, edytorial style.",
+      dailyMinutes: 60,
+      preferredFormats: ["video", "course", "article"],
+      wantsCommunity: true,
+      currentLevel: "beginner",
+    },
+  },
+  {
+    label: "Reject: get-rich-quick fantasy",
+    expect: "reject",
+    input: {
+      goalText:
+        "Chcę nauczyć się jak zostać milionerem w 30 dni bez wysiłku, najlepiej znaleźć bogatego męża.",
+      dailyMinutes: 60,
+      preferredFormats: ["video", "podcast"],
+      wantsCommunity: false,
+      currentLevel: "beginner",
+    },
+  },
+  {
+    label: "Accept: personal finance (real domain)",
+    expect: "accept",
+    input: {
+      goalText:
+        "Chcę zrozumieć osobiste finanse, inwestowanie w ETF-y i podstawy zarządzania budżetem domowym.",
+      dailyMinutes: 30,
+      preferredFormats: ["article", "book", "podcast"],
+      wantsCommunity: false,
+      currentLevel: "beginner",
+    },
+  },
+  {
+    label: "Reject: TikTok fame chasing",
+    expect: "reject",
+    input: {
+      goalText:
+        "Chcę zostać TikTok-famous w miesiąc i mieć milion obserwatorów dla samej sławy.",
+      dailyMinutes: 60,
+      preferredFormats: ["video"],
+      wantsCommunity: true,
+      currentLevel: "beginner",
+    },
+  },
+  {
+    label: "Accept: video editing as craft",
+    expect: "accept",
+    input: {
+      goalText:
+        "Chcę nauczyć się montażu video w Premiere Pro: kolor, dźwięk, narracja, krótkie formy social mediowe jako rzemiosło.",
+      dailyMinutes: 60,
+      preferredFormats: ["video", "course"],
+      wantsCommunity: false,
+      currentLevel: "beginner",
+    },
+  },
 ];
 
 function summarize(label: string, expected: string, result: PlanResponse): void {
