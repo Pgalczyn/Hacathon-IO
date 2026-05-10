@@ -3,7 +3,7 @@ import { Types } from "mongoose";
 import { User, type IUser } from "../models/userBasic.js";
 import { Plan } from "../models/plan.js";
 import { Review } from "../models/review.js";
-import { QuizAttempt } from "../models/weeklySummary.js";
+import {QuizAttempt, WeeklySummary} from "../models/weeklySummary.js";
 
 export interface UpdateUserInput {
     name?: string;
@@ -35,16 +35,19 @@ export class UserService {
         const completedWeeks = await Plan.countDocuments({ userId, status: "completed" });
         const totalReviews = await Review.countDocuments({ userId });
 
+        const weeklySummariesCount = await WeeklySummary.countDocuments({ userId });
+
         const quizAttempts = await QuizAttempt.find({ userId }).select("totalScore").lean();
         const quizzesTaken = quizAttempts.length;
         const avgScoreRaw = quizzesTaken > 0
             ? quizAttempts.reduce((acc, q) => acc + q.totalScore, 0) / quizzesTaken
             : 0;
-        const averageQuizScore = Math.round(avgScoreRaw * 100); // Convert 0.85 to 85%
+        const averageQuizScore = Math.round(avgScoreRaw * 100);
 
         const statistics = {
             completedWeeks,
             totalReviews,
+            weeklySummaries: weeklySummariesCount,   // <-- add this field
             quizzesTaken,
             averageQuizScore
         };
