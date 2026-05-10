@@ -10,20 +10,23 @@ export interface GenerateLongTermArgs {
   preferredFormats?: string[];
 }
 
-function startOfThisMonth(): Date {
+/** Day-only timestamp of "today" (no hours), used as the floor for plan
+ *  generation: month 1's first day matches today's day-of-month. */
+function startOfToday(): Date {
   const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), 1);
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
 export class LongTermPlanService {
   async generateForUser(args: GenerateLongTermArgs): Promise<ILongTermPlan> {
     const input = await this.resolveInput(args);
-    const llm = await generateLongTermPlan(input);
+    const today = startOfToday();
+    const llm = await generateLongTermPlan(input, { today });
 
     const doc = new LongTermPlan({
       userId: args.userId,
       input,
-      yearStartDate: startOfThisMonth(),
+      yearStartDate: today,
       topicSummary: llm.topicSummary,
       yearlyFocus: llm.yearlyFocus,
       months: llm.months,

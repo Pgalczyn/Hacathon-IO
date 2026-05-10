@@ -85,6 +85,13 @@ Style:
   "Web Dev Intro", "Data Structures", "Review", "Complementary Article",
   "Project: Todo App", "OOP Concepts".
 
+Calendar reality (HARD RULE):
+- The user prompt will tell you TODAY'S DATE. Month 1 is the user's
+  CURRENT calendar month, and every task you place in month 1 MUST
+  use day-of-month >= today's day. Earlier days are already past —
+  scheduling work there is broken.
+- Months 2-12 are full upcoming months — days 1-31 are all fair game.
+
 Quantity (NON-NEGOTIABLE — the schema rejects anything below 20):
 - Target: 20-25 tasks PER MONTH. Almost every day has something.
 - Plan in 4-6 deliberate rest days per month — no more.
@@ -131,18 +138,32 @@ export interface LongTermInput {
   preferredFormats: string[];
 }
 
-export interface GenerateLongTermPlanOptions extends LLMConfig {}
+export interface GenerateLongTermPlanOptions extends LLMConfig {
+  /** Today's date — month 1 tasks must use days >= today's day-of-month. */
+  today?: Date;
+}
 
 export async function generateLongTermPlan(
   input: LongTermInput,
   options: GenerateLongTermPlanOptions = {},
 ): Promise<LongTermPlanGen> {
+  const today = options.today ?? new Date();
+  const todayIso = today.toISOString().slice(0, 10); // YYYY-MM-DD
+  const todayDayOfMonth = today.getDate();
+  const monthName = today.toLocaleString("en-US", { month: "long" });
+
   const userPrompt = [
     `USER LEARNING GOAL:`,
     input.goalText,
     ``,
     `CURRENT_LEVEL: ${input.currentLevel}`,
     `PREFERRED FORMATS: ${input.preferredFormats.join(", ")}`,
+    ``,
+    `TODAY'S DATE: ${todayIso} (day ${todayDayOfMonth} of ${monthName}).`,
+    `MONTH 1 CONSTRAINT: this is the user's CURRENT calendar month —`,
+    `every task in month 1 MUST have day >= ${todayDayOfMonth}. Earlier`,
+    `days are in the past and the user can't start work there. Months`,
+    `2-12 are full upcoming calendar months and use days 1-31 freely.`,
   ].join("\n");
 
   return invokeStructured(userPrompt, LongTermPlanGenSchema, {
