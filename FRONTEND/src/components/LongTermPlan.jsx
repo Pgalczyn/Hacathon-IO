@@ -6,8 +6,18 @@ const API_URL = "http://localhost:3000";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 /** Compute the calendar coordinates for monthIndex 1..12 of a plan that
@@ -92,7 +102,12 @@ const Calendar = ({ plan, monthIndex, onPrev, onNext }) => {
     cells.push({ blank: true, key: `b-${i}` });
   }
   for (let d = 1; d <= daysInMonth; d++) {
-    cells.push({ blank: false, day: d, tasks: tasksByDay.get(d) ?? [], key: `d-${d}` });
+    cells.push({
+      blank: false,
+      day: d,
+      tasks: tasksByDay.get(d) ?? [],
+      key: `d-${d}`,
+    });
   }
   while (cells.length % 7 !== 0) {
     cells.push({ blank: true, key: `t-${cells.length}` });
@@ -121,7 +136,9 @@ const Calendar = ({ plan, monthIndex, onPrev, onNext }) => {
       </div>
 
       {month?.theme && (
-        <div className="mb-3 text-muted fst-italic text-center">{month.theme}</div>
+        <div className="mb-3 text-muted fst-italic text-center">
+          {month.theme}
+        </div>
       )}
 
       <div
@@ -253,10 +270,14 @@ const LongTermPlan = () => {
             onClick={handleGenerate}
             disabled={generating}
           >
-            {generating ? "Generating (this takes ~30-60s)…" : "Generate yearly plan"}
+            {generating
+              ? "Generating (this takes ~30-60s)…"
+              : "Generate yearly plan"}
           </button>
           <div className="mt-3 small">
-            <Link to="/learningform">Need to set up your goal first?</Link>
+            <Link to="/learningform" className="auth-link">
+              Need to set up your goal first?
+            </Link>
           </div>
         </div>
       </div>
@@ -265,10 +286,7 @@ const LongTermPlan = () => {
 
   return (
     <div className="container-fluid py-4 px-4">
-      <div
-        className="card shadow-sm p-4 mb-3"
-        style={{ borderRadius: "16px" }}
-      >
+      <div className="card shadow-sm p-4 mb-3" style={{ borderRadius: "16px" }}>
         <h2 className="text-center mb-1 fw-bold">Monthly Learning Plan</h2>
         <div className="text-center text-muted mb-2">{plan.topicSummary}</div>
         <div className="text-center small text-muted fst-italic">
@@ -276,10 +294,7 @@ const LongTermPlan = () => {
         </div>
       </div>
 
-      <div
-        className="card shadow-sm p-4"
-        style={{ borderRadius: "16px" }}
-      >
+      <div className="card shadow-sm p-4" style={{ borderRadius: "16px" }}>
         <Calendar
           plan={plan}
           monthIndex={monthIndex}
@@ -287,11 +302,16 @@ const LongTermPlan = () => {
           onNext={() => setMonthIndex((i) => Math.min(12, i + 1))}
         />
 
-        {error && <div className="alert alert-danger small mt-3 mb-0">{error}</div>}
+        {error && (
+          <div className="alert alert-danger small mt-3 mb-0">{error}</div>
+        )}
 
         <div className="d-flex justify-content-between align-items-center mt-3">
           <div className="small text-muted">
-            Month {monthIndex} of 12 · {plan.months.find((m) => m.monthIndex === monthIndex)?.tasks.length ?? 0} tasks
+            Month {monthIndex} of 12 ·{" "}
+            {plan.months.find((m) => m.monthIndex === monthIndex)?.tasks
+              .length ?? 0}{" "}
+            tasks
           </div>
           <button
             className="btn btn-outline-secondary"
