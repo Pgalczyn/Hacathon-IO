@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./index.css";
 
-const API_URL = "http://localhost:3000";
+import API_URL from "../api.js";
 
 const LEVEL_OPTIONS = [
   { value: "complete_beginner", label: "I'm new — show me the basics" },
@@ -17,7 +17,6 @@ const METHODS = [
   { key: "book", label: "Books / E-books" },
   { key: "course", label: "Online Courses" },
   { key: "podcast", label: "Podcasts / Interviews" },
-  { key: "community", label: "Community / Forums" },
 ];
 
 const TIME_BUCKETS = [
@@ -37,7 +36,6 @@ const LearningForm = () => {
     level: "",
     timeBucketIndex: 1,
     methods: [],
-    connectWithOthers: false,
   });
 
   const handleInputChange = (e) => {
@@ -78,7 +76,6 @@ const LearningForm = () => {
       currentLevel: formData.level,
       dailyMinutes: TIME_BUCKETS[formData.timeBucketIndex].minutes,
       preferredFormats: formData.methods,
-      wantsCommunity: formData.connectWithOthers,
     };
 
     setSubmitting(true);
@@ -105,7 +102,10 @@ const LearningForm = () => {
       } catch {
         // ignore quota / disabled storage
       }
-      navigate("/plan", { state: { plan: data } });
+      // Land on Home — the user immediately sees Today's Focus / DayView with
+      // the freshly-generated weekly plan. The yearly calendar is generating
+      // in the background and shows up on /learning when ready.
+      navigate("/", { state: { plan: data } });
     } catch (err) {
       setServerError(err.message || "Network error — is the backend running?");
     } finally {
@@ -195,21 +195,6 @@ const LearningForm = () => {
                 </div>
               ))}
             </div>
-          </div>
-
-          <div className="form-check">
-            <input
-              className="form-check-input"
-              type="checkbox"
-              id="connectWithOthers"
-              checked={formData.connectWithOthers}
-              onChange={(e) =>
-                setFormData({ ...formData, connectWithOthers: e.target.checked })
-              }
-            />
-            <label className="form-check-label" htmlFor="connectWithOthers">
-              I want to connect with other learners
-            </label>
           </div>
 
           {serverError && (

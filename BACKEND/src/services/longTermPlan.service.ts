@@ -10,20 +10,32 @@ export interface GenerateLongTermArgs {
   preferredFormats?: string[];
 }
 
-function startOfThisMonth(): Date {
+/** Day-only timestamp of "today" (no hours), used as the floor for plan
+ *  generation: month 1's first day matches today's day-of-month. */
+function startOfToday(): Date {
   const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth(), 1);
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
 
 export class LongTermPlanService {
   async generateForUser(args: GenerateLongTermArgs): Promise<ILongTermPlan> {
     const input = await this.resolveInput(args);
-    const llm = await generateLongTermPlan(input);
+    const today = startOfToday();
+
+    // Wipe old yearly plans for this user up front so /longplan returns
+    // 404 during the ~30s LLM call. /learning's polling loader then
+    // auto-swaps to the fresh calendar as soon as it's saved. Without
+    // this the user gets stuck staring at the old plan since the page
+    // fetches /longplan once on mount and the latest-by-createdAt is
+    // still the old doc until the new one is written.
+    await LongTermPlan.deleteMany({ userId: args.userId });
+
+    const llm = await generateLongTermPlan(input, { today });
 
     const doc = new LongTermPlan({
       userId: args.userId,
       input,
-      yearStartDate: startOfThisMonth(),
+      yearStartDate: today,
       topicSummary: llm.topicSummary,
       yearlyFocus: llm.yearlyFocus,
       months: llm.months,

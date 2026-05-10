@@ -1,13 +1,24 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import WelcomeStartCard from "./WelcomeStartCard.jsx";
 import "./index.css";
 
-const API_URL = "http://localhost:3000";
+import API_URL from "../api.js";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 /** Compute the calendar coordinates for monthIndex 1..12 of a plan that
@@ -92,7 +103,12 @@ const Calendar = ({ plan, monthIndex, onPrev, onNext }) => {
     cells.push({ blank: true, key: `b-${i}` });
   }
   for (let d = 1; d <= daysInMonth; d++) {
-    cells.push({ blank: false, day: d, tasks: tasksByDay.get(d) ?? [], key: `d-${d}` });
+    cells.push({
+      blank: false,
+      day: d,
+      tasks: tasksByDay.get(d) ?? [],
+      key: `d-${d}`,
+    });
   }
   while (cells.length % 7 !== 0) {
     cells.push({ blank: true, key: `t-${cells.length}` });
@@ -121,12 +137,14 @@ const Calendar = ({ plan, monthIndex, onPrev, onNext }) => {
       </div>
 
       {month?.theme && (
-        <div className="mb-3 text-muted fst-italic text-center">{month.theme}</div>
+        <div className="mb-3 text-muted fst-italic text-center">
+          {month.theme}
+        </div>
       )}
 
       <div
         className="d-grid mb-2"
-        style={{ gridTemplateColumns: "repeat(7, 1fr)", gap: 8 }}
+        style={{ gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 8 }}
       >
         {WEEKDAYS.map((d) => (
           <div key={d} className="text-center fw-semibold small text-muted">
@@ -137,7 +155,7 @@ const Calendar = ({ plan, monthIndex, onPrev, onNext }) => {
 
       <div
         className="d-grid"
-        style={{ gridTemplateColumns: "repeat(7, 1fr)", gap: 8 }}
+        style={{ gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 8 }}
       >
         {cells.map((c) =>
           c.blank ? (
@@ -157,29 +175,85 @@ const LongTermPlan = () => {
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
   const [unauthorized, setUnauthorized] = useState(false);
+  const [noPlan, setNoPlan] = useState(false);
   const [monthIndex, setMonthIndex] = useState(1);
 
+  // Onboarding kicks off yearly generation in the background and returns
+  // before it finishes. So when this page mounts after a fresh /onboarding
+  // submit, /longplan often returns 404 for a while. Poll every few seconds
+  // (the LLM call typically takes ~30s) instead of forcing the user to
+  // press a button. Cap at 2 minutes so we don't loop forever if the
+  // background job died.
+  //
+  // First, gate on the weekly plan: if the user never filled the form,
+  // there's no point polling /longplan — kick them to /learningform so
+  // the questionnaire is the obligatory first step.
   useEffect(() => {
     let cancelled = false;
-    fetch(`${API_URL}/longplan`, { credentials: "include" })
-      .then(async (r) => {
+    let timeoutId = null;
+    const startedAt = Date.now();
+    const POLL_BUDGET_MS = 120_000;
+
+    const fetchOnce = async () => {
+      try {
+        const r = await fetch(`${API_URL}/longplan`, { credentials: "include" });
         if (cancelled) return;
         if (r.status === 401) {
           setUnauthorized(true);
+          setLoading(false);
           return;
         }
-        if (r.status === 404) return;
+        if (r.status === 404) {
+          if (Date.now() - startedAt >= POLL_BUDGET_MS) {
+            setLoading(false);
+            return;
+          }
+          if (!cancelled) {
+            timeoutId = setTimeout(fetchOnce, 4000);
+          }
+          return;
+        }
         const j = await r.json();
         if (!r.ok) {
           setError(j.message || `Failed (${r.status})`);
+          setLoading(false);
           return;
         }
         setPlan(j);
-      })
-      .catch((e) => !cancelled && setError(e.message || "Network error"))
-      .finally(() => !cancelled && setLoading(false));
+        setLoading(false);
+      } catch (e) {
+        if (cancelled) return;
+        setError(e.message || "Network error");
+        setLoading(false);
+      }
+    };
+
+    (async () => {
+      try {
+        const planRes = await fetch(`${API_URL}/plan`, { credentials: "include" });
+        if (cancelled) return;
+        if (planRes.status === 401) {
+          setUnauthorized(true);
+          setLoading(false);
+          return;
+        }
+        if (planRes.status === 404) {
+          setNoPlan(true);
+          setLoading(false);
+          return;
+        }
+        // Weekly plan exists — yearly might still be brewing in background.
+        fetchOnce();
+      } catch (e) {
+        if (cancelled) return;
+        setError(e.message || "Network error");
+        setLoading(false);
+      }
+    })();
+
     return () => {
       cancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
     };
   }, []);
 
@@ -211,6 +285,10 @@ const LongTermPlan = () => {
     }
   };
 
+  if (noPlan) {
+    return <WelcomeStartCard />;
+  }
+
   if (unauthorized) {
     return (
       <div className="container py-4">
@@ -230,7 +308,23 @@ const LongTermPlan = () => {
 
   if (loading) {
     return (
-      <div className="container py-4 text-muted">Loading your yearly plan…</div>
+      <div className="container py-5">
+        <div
+          className="card shadow-sm p-4 text-center mx-auto"
+          style={{ maxWidth: "560px", borderRadius: "16px" }}
+        >
+          <div
+            className="spinner-border mx-auto mb-3"
+            style={{ color: "#9f46ed", width: "2.5rem", height: "2.5rem" }}
+            role="status"
+          />
+          <h4 className="fw-bold mb-2">Generating your 12-month roadmap…</h4>
+          <p className="text-muted mb-0 small">
+            This usually takes ~30s. Hang tight — you can also leave this tab
+            open and come back; the calendar will appear automatically.
+          </p>
+        </div>
+      </div>
     );
   }
 
@@ -253,10 +347,14 @@ const LongTermPlan = () => {
             onClick={handleGenerate}
             disabled={generating}
           >
-            {generating ? "Generating (this takes ~30-60s)…" : "Generate yearly plan"}
+            {generating
+              ? "Generating (this takes ~30-60s)…"
+              : "Generate yearly plan"}
           </button>
           <div className="mt-3 small">
-            <Link to="/learningform">Need to set up your goal first?</Link>
+            <Link to="/learningform" className="auth-link">
+              Need to set up your goal first?
+            </Link>
           </div>
         </div>
       </div>
@@ -265,10 +363,7 @@ const LongTermPlan = () => {
 
   return (
     <div className="container-fluid py-4 px-4">
-      <div
-        className="card shadow-sm p-4 mb-3"
-        style={{ borderRadius: "16px" }}
-      >
+      <div className="card shadow-sm p-4 mb-3" style={{ borderRadius: "16px" }}>
         <h2 className="text-center mb-1 fw-bold">Monthly Learning Plan</h2>
         <div className="text-center text-muted mb-2">{plan.topicSummary}</div>
         <div className="text-center small text-muted fst-italic">
@@ -276,10 +371,7 @@ const LongTermPlan = () => {
         </div>
       </div>
 
-      <div
-        className="card shadow-sm p-4"
-        style={{ borderRadius: "16px" }}
-      >
+      <div className="card shadow-sm p-4" style={{ borderRadius: "16px" }}>
         <Calendar
           plan={plan}
           monthIndex={monthIndex}
@@ -287,11 +379,16 @@ const LongTermPlan = () => {
           onNext={() => setMonthIndex((i) => Math.min(12, i + 1))}
         />
 
-        {error && <div className="alert alert-danger small mt-3 mb-0">{error}</div>}
+        {error && (
+          <div className="alert alert-danger small mt-3 mb-0">{error}</div>
+        )}
 
         <div className="d-flex justify-content-between align-items-center mt-3">
           <div className="small text-muted">
-            Month {monthIndex} of 12 · {plan.months.find((m) => m.monthIndex === monthIndex)?.tasks.length ?? 0} tasks
+            Month {monthIndex} of 12 ·{" "}
+            {plan.months.find((m) => m.monthIndex === monthIndex)?.tasks
+              .length ?? 0}{" "}
+            tasks
           </div>
           <button
             className="btn btn-outline-secondary"

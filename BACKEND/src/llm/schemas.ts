@@ -49,13 +49,16 @@ export const PlanSchema = z.object({
   weekly_focus: z
     .string()
     .describe("What the user will achieve by end of this week."),
-  daily_time_minutes: z.number().int().positive(),
+  // Allow 0 because the LLM returns a placeholder plan (with 0 here)
+  // when the goal is rejected — strict positive() blew up parsing for
+  // every "frivolous"/"illegal" rejection. The service zeroes the
+  // whole plan to null on rejection anyway.
+  daily_time_minutes: z.number().int().nonnegative(),
   tasks: z
     .array(LearningTaskSchema)
-    .min(1)
     .max(21)
     .describe(
-      "When accepted, ideally 7-14 tasks covering all 7 days. Each day gets at least one task.",
+      "When accepted: ideally 7-14 tasks covering all 7 days, each day with at least one task. When rejected: empty array []. Either way, this field must be an array (never null).",
     ),
 });
 
@@ -99,7 +102,6 @@ export const PreferredFormat = z.enum([
   "book",
   "course",
   "podcast",
-  "community",
 ]);
 
 export const ProficiencyLevel = z.enum([
@@ -115,7 +117,6 @@ export const OnboardingInputSchema = z.object({
   goalText: z.string().min(20),
   dailyMinutes: z.number().int().positive(),
   preferredFormats: z.array(PreferredFormat).min(1),
-  wantsCommunity: z.boolean(),
   currentLevel: ProficiencyLevel,
 });
 

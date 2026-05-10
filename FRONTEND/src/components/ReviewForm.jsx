@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./index.css";
 
-const API_URL = "http://localhost:3000";
+import API_URL from "../api.js";
 
 const HELPFUL_OPTIONS = [
   { value: "yes_very_helpful", label: "Yes, very helpful" },

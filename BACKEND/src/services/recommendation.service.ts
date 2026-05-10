@@ -1,10 +1,16 @@
 import { reviewService } from "./review.service.js";
 import type { IReview } from "../models/review.js";
+import { QuizAttempt, WeeklySummary } from "../models/weeklySummary.js";
 
 export interface FormatStat {
   format: string;
   avgRating: number;
   count: number;
+}
+
+export interface QuizMissedTopic {
+  question: string;
+  feedback: string;
 }
 
 export interface LearnerInsights {
@@ -18,6 +24,11 @@ export interface LearnerInsights {
   };
   topPositive: { title: string; type: string; rating: number }[];
   topNegative: { title: string; type: string; rating: number; helpful: string }[];
+  /** From the most recent end-of-week quiz attempt, if any. */
+  lastQuiz: {
+    totalScore: number;
+    missed: QuizMissedTopic[];
+  } | null;
 }
 
 const HIGH_RATING = 5;
@@ -74,6 +85,7 @@ function aggregate(reviews: IReview[]): LearnerInsights {
     difficultyPattern: { too_easy: tooEasy, just_right: justRight, too_difficult: tooDifficult },
     topPositive,
     topNegative,
+    lastQuiz: null, // populated by buildInsights, which has DB access
   };
 }
 
@@ -136,14 +148,70 @@ export function insightsToPromptContext(i: LearnerInsights): string {
     );
   }
 
+  if (i.lastQuiz) {
+    const pct = Math.round(i.lastQuiz.totalScore * 100);
+    lines.push(`- End-of-week quiz score: ${pct}%.`);
+    if (i.lastQuiz.missed.length > 0) {
+      const items = i.lastQuiz.missed
+        .slice(0, 4)
+        .map((m) => `"${m.question}" (gap: ${m.feedback})`)
+        .join("; ");
+      lines.push(
+        `- Concepts they got wrong or partial — re-cover next week: ${items}.`,
+      );
+    } else if (pct >= 80) {
+      lines.push(
+        `- They aced the quiz — push the difficulty next week, don't re-teach the same material.`,
+      );
+    }
+  }
+
   return lines.join("\n");
+}
+
+async function fetchLastQuiz(
+  userId: string,
+): Promise<LearnerInsights["lastQuiz"]> {
+  const attempt = await QuizAttempt.findOne({ userId })
+    .sort({ createdAt: -1 })
+    .lean();
+  if (!attempt) return null;
+
+  const summary = await WeeklySummary.findById(attempt.weeklySummaryId).lean();
+  const questionById = new Map(
+    (summary?.quiz ?? []).map((q) => [q.id, q.question]),
+  );
+
+  // Treat anything below 0.7 as "missed" — open questions can be partial.
+  const missed: QuizMissedTopic[] = attempt.grades
+    .filter((g) => g.score < 0.7)
+    .map((g) => ({
+      question: questionById.get(g.questionId) ?? g.questionId,
+      feedback: g.feedback,
+    }));
+
+  return { totalScore: attempt.totalScore, missed };
 }
 
 export class RecommendationService {
   async buildInsights(userId: string): Promise<LearnerInsights | null> {
     const reviews = await reviewService.listForUser(userId);
-    if (reviews.length === 0) return null;
-    return aggregate(reviews);
+    const lastQuiz = await fetchLastQuiz(userId);
+    if (reviews.length === 0 && !lastQuiz) return null;
+
+    const base =
+      reviews.length === 0
+        ? {
+            totalReviews: 0,
+            avgRating: 0,
+            formatStats: [],
+            difficultyPattern: { too_easy: 0, just_right: 0, too_difficult: 0 },
+            topPositive: [],
+            topNegative: [],
+            lastQuiz: null,
+          }
+        : aggregate(reviews);
+    return { ...base, lastQuiz };
   }
 
   async buildPromptContext(userId: string): Promise<string | null> {

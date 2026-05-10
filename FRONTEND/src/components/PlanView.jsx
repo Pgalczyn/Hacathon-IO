@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./index.css";
 
-const API_URL = "http://localhost:3000";
+import API_URL from "../api.js";
 
 const FORMAT_BADGE = {
   video: "bg-danger",
@@ -14,7 +14,8 @@ const FORMAT_BADGE = {
   exercise: "bg-primary",
 };
 
-export const reviewRouteFor = (type) => (type === "video" ? "/videoreview" : "/textreview");
+export const reviewRouteFor = (type) =>
+  type === "video" ? "/videoreview" : "/textreview";
 
 export function loadCachedPlan() {
   try {
@@ -27,6 +28,7 @@ export function loadCachedPlan() {
 
 export const TaskCard = ({ task, planId, taskIndex }) => {
   const navigate = useNavigate();
+
   const handleReview = () => {
     navigate(reviewRouteFor(task.format), {
       state: {
@@ -43,31 +45,57 @@ export const TaskCard = ({ task, planId, taskIndex }) => {
   };
 
   return (
-    <div className="card mb-2 shadow-sm" style={{ borderRadius: "12px" }}>
-      <div className="card-body py-2 px-3">
-        <div className="d-flex justify-content-between align-items-start gap-2">
-          <h6 className="mb-1 fw-semibold">{task.title}</h6>
-          <span className={`badge ${FORMAT_BADGE[task.format] ?? "bg-dark"} flex-shrink-0`}>
-            {task.format}
+    <div className="card task-card mb-3">
+      <div className="card-body p-4">
+        <div className="d-flex justify-content-between align-items-start gap-3 mb-2">
+          <div>
+            <h5 className="fw-bold mb-1">{task.title}</h5>
+
+            {task.source && (
+              <div
+                className="small text-muted"
+                style={{
+                  padding: "2px 6px",
+                  borderRadius: "6px",
+                }}
+              >
+                {task.source}
+              </div>
+            )}
+          </div>
+
+          <span className="auth-link-text-only small">
+            {task.format.toUpperCase()}
           </span>
         </div>
-        {task.source && <div className="small text-muted mb-1">{task.source}</div>}
-        <div className="small mb-1">{task.description}</div>
-        <div className="small text-muted fst-italic">{task.why_this}</div>
-        <div className="d-flex justify-content-between align-items-center mt-2">
-          <span className="small text-muted">~{task.estimated_time_minutes} min</span>
-          <div className="d-flex gap-2">
+
+        <p className="small task-description mb-2">{task.description}</p>
+
+        <div className="small fst-italic task-reason mb-3">{task.why_this}</div>
+
+        <div className="d-flex justify-content-between align-items-center pt-2 border-top">
+          <span className="small text-muted fw-semibold">
+            ~{task.estimated_time_minutes} min
+          </span>
+
+          <div className="d-flex align-items-center gap-3">
             {task.url && (
-              <a href={task.url} target="_blank" rel="noreferrer" className="small">
-                open ↗
+              <a
+                href={task.url}
+                target="_blank"
+                rel="noreferrer"
+                className="auth-link small"
+              >
+                Open ↗
               </a>
             )}
+
             <button
               type="button"
               onClick={handleReview}
-              className="btn btn-link p-0 small"
+              className="auth-link small border-0 bg-transparent p-0"
             >
-              review
+              Review
             </button>
           </div>
         </div>
@@ -77,54 +105,97 @@ export const TaskCard = ({ task, planId, taskIndex }) => {
 };
 
 export const DayBlock = ({ day, tasks, planId }) => (
-  <div className="mb-3">
-    <h5 className="fw-bold mb-2">Day {day}</h5>
+  <div className="mb-4">
+    <div className="d-flex align-items-center gap-2 mb-3">
+      <div
+        style={{
+          width: "10px",
+          height: "10px",
+          borderRadius: "999px",
+          background: "#9f46ed",
+        }}
+      />
+      <h4 className="fw-bold mb-0">Day {day}</h4>
+    </div>
+
     {tasks.map((t, i) => (
-      <TaskCard key={`${t.title}-${i}`} task={t} planId={planId} taskIndex={i} />
+      <TaskCard
+        key={`${t.title}-${i}`}
+        task={t}
+        planId={planId}
+        taskIndex={i}
+      />
     ))}
   </div>
 );
 
 export const VideoCard = ({ v, onReview }) => (
-  <div className="card shadow-sm h-100" style={{ borderRadius: "12px" }}>
+  <div className="card task-card h-100 overflow-hidden">
     <a href={v.embedUrl} target="_blank" rel="noreferrer">
       {v.thumbnail && (
         <img
           src={v.thumbnail}
           alt={v.title}
           className="card-img-top"
-          style={{ borderTopLeftRadius: "12px", borderTopRightRadius: "12px" }}
+          style={{
+            height: "180px",
+            objectFit: "cover",
+          }}
         />
       )}
     </a>
-    <div className="card-body py-2 px-3 d-flex justify-content-between align-items-start gap-2">
-      <div className="small fw-semibold">{v.title}</div>
-      <button type="button" onClick={onReview} className="btn btn-link p-0 small flex-shrink-0">
-        review
-      </button>
+
+    <div className="card-body p-3">
+      <div className="fw-semibold mb-2">{v.title}</div>
+
+      <div className="d-flex justify-content-end">
+        <button
+          type="button"
+          onClick={onReview}
+          className="auth-link border-0 bg-transparent p-0 small"
+        >
+          Review
+        </button>
+      </div>
     </div>
   </div>
 );
 
 export const SimpleListItem = ({ title, subtitle, href, onReview }) => (
-  <div className="card mb-2 shadow-sm" style={{ borderRadius: "12px" }}>
-    <div className="card-body py-2 px-3">
-      <div className="d-flex justify-content-between align-items-start gap-2">
+  <div className="card task-card mb-2">
+    <div className="card-body py-3 px-4">
+      <div className="d-flex justify-content-between align-items-start gap-3">
         <div className="flex-grow-1">
           {href ? (
-            <a href={href} target="_blank" rel="noreferrer" className="text-decoration-none text-reset">
-              <div className="fw-semibold small">{title}</div>
-              {subtitle && <div className="small text-muted">{subtitle}</div>}
+            <a
+              href={href}
+              target="_blank"
+              rel="noreferrer"
+              className="text-decoration-none text-reset"
+            >
+              <div className="fw-semibold">{title}</div>
+
+              {subtitle && (
+                <div className="small text-muted mt-1">{subtitle}</div>
+              )}
             </a>
           ) : (
             <>
-              <div className="fw-semibold small">{title}</div>
-              {subtitle && <div className="small text-muted">{subtitle}</div>}
+              <div className="fw-semibold">{title}</div>
+
+              {subtitle && (
+                <div className="small text-muted mt-1">{subtitle}</div>
+              )}
             </>
           )}
         </div>
-        <button type="button" onClick={onReview} className="btn btn-link p-0 small flex-shrink-0">
-          review
+
+        <button
+          type="button"
+          onClick={onReview}
+          className="auth-link border-0 bg-transparent p-0 small"
+        >
+          Review
         </button>
       </div>
     </div>
@@ -134,42 +205,60 @@ export const SimpleListItem = ({ title, subtitle, href, onReview }) => (
 export const PlanView = () => {
   const location = useLocation();
   const navigateRouter = useNavigate();
-  const [data, setData] = useState(() => location.state?.plan ?? loadCachedPlan());
+
+  const [data, setData] = useState(
+    () => location.state?.plan ?? loadCachedPlan(),
+  );
+
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState("");
-  const [busy, setBusy] = useState(""); // "accept" | "regenerate" | "next" | ""
+  const [busy, setBusy] = useState("");
 
   useEffect(() => {
     if (location.state?.plan) {
       setData(location.state.plan);
       return;
     }
+
     if (data) return;
 
     let cancelled = false;
+
     setLoading(true);
-    fetch(`${API_URL}/plan`, { credentials: "include" })
+
+    fetch(`${API_URL}/plan`, {
+      credentials: "include",
+    })
       .then(async (response) => {
         if (cancelled) return;
+
         if (response.ok) {
           const json = await response.json();
+
           setData(json);
+
           try {
             localStorage.setItem("currentPlan", JSON.stringify(json));
           } catch {
-            // ignore
+            //
           }
+
           return;
         }
+
         if (response.status === 401 || response.status === 404) {
-          // anonymous or no plan yet — leave data null, render the empty state
           return;
         }
+
         const json = await response.json().catch(() => ({}));
-        setFetchError(json.message ?? `Failed to load plan (${response.status})`);
+
+        setFetchError(
+          json.message ?? `Failed to load plan (${response.status})`,
+        );
       })
       .catch((err) => {
         if (cancelled) return;
+
         setFetchError(err.message ?? "Network error");
       })
       .finally(() => {
@@ -179,108 +268,89 @@ export const PlanView = () => {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
 
   const tasksByDay = useMemo(() => {
     if (!data?.plan?.tasks) return {};
+
     return data.plan.tasks.reduce((acc, t) => {
       const day = t.day ?? 1;
+
       if (!acc[day]) acc[day] = [];
+
       acc[day].push(t);
+
       return acc;
     }, {});
   }, [data]);
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center w-100 p-5 bg-light">
-        <div className="text-muted">Loading your plan…</div>
+      <div className="container py-5">
+        <div className="card modern-card p-5 text-center">
+          <div className="text-muted">Loading your learning plan…</div>
+        </div>
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="d-flex justify-content-center align-items-center w-100 p-5 bg-light">
-        <div className="card shadow-sm p-4 text-center" style={{ maxWidth: "420px", borderRadius: "16px" }}>
-          <h4 className="mb-3">No plan yet</h4>
-          <p className="text-muted">Fill out the learning form to generate your weekly plan.</p>
-          {fetchError && <div className="alert alert-warning small">{fetchError}</div>}
-          <Link to="/learningform" className="btn purple-btn">Set up my plan</Link>
+      <div className="container py-5">
+        <div
+          className="card modern-card p-5 text-center mx-auto"
+          style={{ maxWidth: "500px" }}
+        >
+          <h3 className="fw-bold mb-3">No plan yet</h3>
+
+          <p className="text-muted mb-4">
+            Fill out the onboarding form to generate your personalized learning
+            journey.
+          </p>
+
+          {fetchError && (
+            <div className="alert alert-warning small">{fetchError}</div>
+          )}
+
+          <Link to="/learningform" className="btn purple-btn px-4 py-2">
+            Create my plan
+          </Link>
         </div>
       </div>
     );
   }
 
   const { validation, plan, materials, planId } = data;
-  const status = data.status ?? "accepted"; // legacy plans default to accepted
+
+  const status = data.status ?? "accepted";
 
   const goReview = (route, material) =>
-    navigateRouter(route, { state: { material: { ...material, planId: planId ?? null } } });
-
-  const refreshFromBackend = async () => {
-    try {
-      const r = await fetch(`${API_URL}/plan`, { credentials: "include" });
-      if (r.ok) {
-        const j = await r.json();
-        setData(j);
-        try { localStorage.setItem("currentPlan", JSON.stringify(j)); } catch { /* ignore */ }
-      }
-    } catch { /* ignore */ }
-  };
-
-  const handleAccept = async () => {
-    setBusy("accept");
-    try {
-      const r = await fetch(`${API_URL}/plan/accept`, { method: "POST", credentials: "include" });
-      if (!r.ok) {
-        const j = await r.json().catch(() => ({}));
-        setFetchError(j.message || `Failed (${r.status})`);
-        return;
-      }
-      await refreshFromBackend();
-    } finally {
-      setBusy("");
-    }
-  };
-
-  const handleAction = async (path, label) => {
-    setBusy(label);
-    setFetchError("");
-    try {
-      const r = await fetch(`${API_URL}${path}`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: "{}",
-      });
-      const j = await r.json();
-      if (!r.ok) {
-        setFetchError(j.message || j.error || `Failed (${r.status})`);
-        return;
-      }
-      // /regenerate and /next return the same shape as /onboarding —
-      // we can drop it straight into local state.
-      setData(j);
-      try { localStorage.setItem("currentPlan", JSON.stringify(j)); } catch { /* ignore */ }
-    } catch (err) {
-      setFetchError(err.message || "Network error");
-    } finally {
-      setBusy("");
-    }
-  };
+    navigateRouter(route, {
+      state: {
+        material: {
+          ...material,
+          planId: planId ?? null,
+        },
+      },
+    });
 
   if (!validation?.accepted || !plan) {
     return (
-      <div className="d-flex justify-content-center align-items-start w-100 py-4 bg-light">
-        <div className="card shadow-sm p-4" style={{ maxWidth: "560px", borderRadius: "16px" }}>
-          <h4 className="text-warning fw-bold mb-2">We can't plan this goal</h4>
-          <p>{validation?.rejection_reason ?? "Please try a different goal."}</p>
-          {validation?.rejection_category && (
-            <p className="small text-muted">Category: {validation.rejection_category}</p>
-          )}
-          <Link to="/learningform" className="btn purple-btn mt-2">Try again</Link>
+      <div className="container py-5">
+        <div
+          className="card modern-card p-5 mx-auto"
+          style={{ maxWidth: "650px" }}
+        >
+          <h3 className="fw-bold text-warning mb-3">We can't plan this goal</h3>
+
+          <p className="text-muted">
+            {validation?.rejection_reason ??
+              "Please try another learning goal."}
+          </p>
+
+          <Link to="/learningform" className="btn purple-btn mt-3">
+            Try again
+          </Link>
         </div>
       </div>
     );
@@ -290,11 +360,20 @@ export const PlanView = () => {
     <div className="container py-4">
       <div className="row g-4">
         <div className="col-lg-7">
-          <div className="card shadow-sm p-4 mb-3" style={{ borderRadius: "16px" }}>
-            <div className="d-flex justify-content-between align-items-start gap-2 mb-1">
-              <h3 className="fw-bold mb-0">{plan.weekly_focus}</h3>
+          <div className="card modern-card p-4 mb-4">
+            <div className="d-flex justify-content-between align-items-start gap-3 mb-3">
+              <div>
+                <div className="small purple-text fw-semibold mb-2">
+                  WEEKLY FOCUS
+                </div>
+
+                <h2 className="fw-bold mb-2">{plan.weekly_focus}</h2>
+
+                <p className="section-subtitle mb-0">{plan.topic_summary}</p>
+              </div>
+
               <span
-                className={`badge flex-shrink-0 ${
+                className={`badge custom-badge ${
                   status === "draft"
                     ? "bg-warning text-dark"
                     : status === "completed"
@@ -305,81 +384,50 @@ export const PlanView = () => {
                 {status}
               </span>
             </div>
-            <p className="text-muted">{plan.topic_summary}</p>
-            <div className="small text-muted mb-3">
-              ~{plan.daily_time_minutes} minutes per day · {plan.tasks.length} tasks
+
+            <div className="small text-muted">
+              ~{plan.daily_time_minutes} minutes/day · {plan.tasks.length} tasks
             </div>
-
-            {status === "draft" && (
-              <div className="alert alert-warning small mb-3">
-                <strong>Draft plan.</strong> Accept it to commit to this week, or regenerate
-                if you'd like a different take.
-              </div>
-            )}
-
-            <div className="d-flex gap-2 flex-wrap">
-              {status === "draft" && (
-                <>
-                  <button
-                    type="button"
-                    className="btn purple-btn"
-                    onClick={handleAccept}
-                    disabled={busy !== ""}
-                  >
-                    {busy === "accept" ? "Accepting…" : "Accept this plan"}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary"
-                    onClick={() => handleAction("/plan/regenerate", "regenerate")}
-                    disabled={busy !== ""}
-                  >
-                    {busy === "regenerate" ? "Regenerating…" : "Regenerate"}
-                  </button>
-                </>
-              )}
-              {(status === "accepted" || status === "completed") && (
-                <button
-                  type="button"
-                  className="btn purple-btn"
-                  onClick={() => handleAction("/plan/next", "next")}
-                  disabled={busy !== ""}
-                >
-                  {busy === "next" ? "Generating next week…" : "Generate next week's plan"}
-                </button>
-              )}
-            </div>
-
-            {fetchError && status !== "draft" && (
-              <div className="alert alert-danger small mt-3 mb-0">{fetchError}</div>
-            )}
           </div>
 
           {Object.keys(tasksByDay)
             .map(Number)
             .sort((a, b) => a - b)
             .map((day) => (
-              <DayBlock key={day} day={day} tasks={tasksByDay[day]} planId={planId} />
+              <DayBlock
+                key={day}
+                day={day}
+                tasks={tasksByDay[day]}
+                planId={planId}
+              />
             ))}
 
-          <div className="d-flex gap-2 mt-2 flex-wrap">
-            <Link to="/learningform" className="btn btn-outline-secondary">
-              Generate a new plan
+          <div className="d-flex gap-3 flex-wrap mt-4">
+            <Link to="/learningform" className="btn purple-outline-btn">
+              Generate new plan
             </Link>
-            <Link to="/conversation" className="btn btn-outline-primary">
-              Talk to your tutor
+
+            <Link to="/conversation" className="btn purple-btn">
+              Talk to tutor
             </Link>
           </div>
         </div>
 
         <div className="col-lg-5">
-          <div className="card shadow-sm p-4 mb-3" style={{ borderRadius: "16px" }}>
-            <h5 className="fw-bold mb-3">Real materials we found</h5>
+          <div className="card modern-card p-4 materials-panel">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <div>
+                <div className="small purple-text fw-semibold">MATERIALS</div>
+
+                <h4 className="fw-bold mb-0">Recommended resources</h4>
+              </div>
+            </div>
 
             {materials?.videos?.length > 0 && (
               <>
-                <h6 className="text-muted text-uppercase small mt-2">Videos</h6>
-                <div className="row g-2">
+                <h6 className="text-muted text-uppercase small mb-3">Videos</h6>
+
+                <div className="row g-3 mb-4">
                   {materials.videos.map((v, i) => (
                     <div key={v.videoId} className="col-12">
                       <VideoCard
@@ -402,7 +450,8 @@ export const PlanView = () => {
 
             {materials?.books?.length > 0 && (
               <>
-                <h6 className="text-muted text-uppercase small mt-3">Books (Project Gutenberg)</h6>
+                <h6 className="text-muted text-uppercase small mb-3">Books</h6>
+
                 {materials.books.map((b, i) => (
                   <SimpleListItem
                     key={`${b.title}-${i}`}
@@ -425,7 +474,10 @@ export const PlanView = () => {
 
             {materials?.academic_papers?.length > 0 && (
               <>
-                <h6 className="text-muted text-uppercase small mt-3">Academic papers (OpenAlex)</h6>
+                <h6 className="text-muted text-uppercase small mb-3 mt-4">
+                  Academic Papers
+                </h6>
+
                 {materials.academic_papers.map((p, i) => (
                   <SimpleListItem
                     key={`${p.title}-${i}`}
@@ -444,15 +496,6 @@ export const PlanView = () => {
                   />
                 ))}
               </>
-            )}
-
-            {(!materials ||
-              ((materials.videos?.length ?? 0) === 0 &&
-                (materials.books?.length ?? 0) === 0 &&
-                (materials.academic_papers?.length ?? 0) === 0)) && (
-              <div className="text-muted small">
-                No external materials returned this time. The plan above is your starting point.
-              </div>
             )}
           </div>
         </div>

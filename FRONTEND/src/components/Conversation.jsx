@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
+import WelcomeStartCard from "./WelcomeStartCard.jsx";
+import { useAuth } from "./AuthContext.jsx";
 import "./index.css";
 
-const API_URL = "http://localhost:3000";
+import API_URL from "../api.js";
 
 const MessageBubble = ({ msg }) => {
   const isUser = msg.role === "user";
@@ -30,6 +32,7 @@ const MessageBubble = ({ msg }) => {
 const Conversation = () => {
   const { id: routeId } = useParams();
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [convo, setConvo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
@@ -37,7 +40,21 @@ const Conversation = () => {
   const [error, setError] = useState("");
   const [input, setInput] = useState("");
   const [unauthorized, setUnauthorized] = useState(false);
+  const [noPlan, setNoPlan] = useState(false);
   const scrollRef = useRef(null);
+
+  // Gate on weekly plan: tutoring needs a plan to discuss. If none yet,
+  // render the same Welcome CTA as Home / Learning / Summary.
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`${API_URL}/plan`, { credentials: "include" })
+      .then((r) => {
+        if (cancelled) return;
+        if (r.status === 404) setNoPlan(true);
+      })
+      .catch(() => { /* fall through to existing flow */ });
+    return () => { cancelled = true; };
+  }, []);
 
   // Initial load: existing conversation by id, or render empty state with start button
   useEffect(() => {
@@ -144,6 +161,33 @@ const Conversation = () => {
     }
   };
 
+  if (authLoading) {
+    return <div className="text-center py-5">Loading…</div>;
+  }
+
+  if (!user) {
+    return (
+      <div className="container py-4">
+        <div
+          className="card shadow-sm p-4 text-center mx-auto"
+          style={{ maxWidth: "480px", borderRadius: "16px" }}
+        >
+          <h3 className="fw-bold mb-3">Talk to your tutor</h3>
+          <p className="text-muted">
+            Sign in to chat with the AI tutor about your plan.
+          </p>
+          <Link to="/login" className="btn purple-btn btn-lg">
+            Log in
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (noPlan) {
+    return <WelcomeStartCard />;
+  }
+
   if (unauthorized) {
     return (
       <div className="container py-4">
@@ -152,7 +196,9 @@ const Conversation = () => {
           style={{ maxWidth: "480px", borderRadius: "16px" }}
         >
           <h3 className="fw-bold mb-3">Talk to your tutor</h3>
-          <p className="text-muted">Sign in to chat with the AI tutor about your plan.</p>
+          <p className="text-muted">
+            Sign in to chat with the AI tutor about your plan.
+          </p>
           <Link to="/login" className="btn purple-btn btn-lg">
             Log in
           </Link>
@@ -162,7 +208,9 @@ const Conversation = () => {
   }
 
   if (loading) {
-    return <div className="container py-4 text-muted">Loading conversation…</div>;
+    return (
+      <div className="container py-4 text-muted">Loading conversation…</div>
+    );
   }
 
   if (!convo) {
@@ -174,8 +222,8 @@ const Conversation = () => {
         >
           <h3 className="fw-bold mb-2">Talk to your tutor</h3>
           <p className="text-muted">
-            Have an open conversation about your latest plan. The AI tutor will ask
-            questions to check your understanding.
+            Have an open conversation about your latest plan. The AI tutor will
+            ask questions to check your understanding.
           </p>
           {error && <div className="alert alert-danger small">{error}</div>}
           <button
@@ -220,7 +268,11 @@ const Conversation = () => {
             <div className="d-flex justify-content-start mb-2">
               <div
                 className="px-3 py-2 shadow-sm text-muted small fst-italic"
-                style={{ borderRadius: "16px", background: "white", border: "1px solid #e9ecef" }}
+                style={{
+                  borderRadius: "16px",
+                  background: "white",
+                  border: "1px solid #e9ecef",
+                }}
               >
                 tutor is thinking…
               </div>
@@ -252,7 +304,9 @@ const Conversation = () => {
       </div>
 
       <div className="text-center small">
-        <Link to="/plan">Back to plan</Link>
+        <Link to="/plan" className="auth-link">
+          Back to plan
+        </Link>
       </div>
     </div>
   );

@@ -6,10 +6,10 @@ import type { LLMConfig } from "./provider.js";
  * Schemas
  * ========================================================== */
 
-// Groq's tool-call validator chokes on `.nullable()` (same bug as in
-// learningPlan), so each field is always present and we use sentinel
-// values for the "not applicable" case. The wrapper below converts
-// sentinels back to null in the public type.
+// Single flat schema (not a discriminated union — Groq's tool-call
+// validator misrenders union schemas). Both branches keep all fields
+// present; the LLM puts dummy values in the "not applicable" ones,
+// and the normalizer below converts those into null for the public type.
 export const QuizQuestionSchema = z.object({
   id: z.string().describe('Stable id like "q1", "q2", ...'),
   type: z.enum(["mcq", "open"]),
@@ -17,33 +17,35 @@ export const QuizQuestionSchema = z.object({
   options: z
     .array(z.string())
     .describe(
-      'For type="mcq": 3 or 4 options. For type="open": empty array [].',
+      'For type="mcq": 3 or 4 short options. For type="open": empty array [].',
     ),
   correctOption: z
     .number()
     .int()
     .describe(
-      'For type="mcq": 0-based index into `options`. For type="open": -1.',
+      'For type="mcq": 0-based index into `options` (0-3). For type="open": ALWAYS 0 (the field is ignored for open questions, but must be present).',
     ),
   rubric: z
     .string()
     .describe(
-      'For type="open": 1-2 sentence rubric describing a good answer. For type="mcq": empty string "".',
+      'For type="open": 1-2 sentence rubric describing what a good answer covers. For type="mcq": MUST be the literal string "n/a".',
     ),
 });
 
 export const WeeklySummaryGenSchema = z.object({
-  summaryMarkdown: z
-    .string()
+  summaryParagraphs: z
+    .array(z.string())
+    .min(2)
+    .max(5)
     .describe(
-      "A short markdown note (3-6 short paragraphs / bullets) summarizing what the user worked on this week, what went well, and what to focus on next. Match the user's input language.",
+      "2-5 short standalone paragraphs/bullets. EACH ENTRY MUST BE A SINGLE LINE OF PLAIN TEXT — do NOT put any newline characters inside an entry. Together they cover what the user worked on, what went well, and what to focus on next. Total ~600-1200 chars. Match the user's input language.",
     ),
   quiz: z
     .array(QuizQuestionSchema)
     .min(3)
-    .max(6)
+    .max(4)
     .describe(
-      "3-6 questions mixing 'mcq' (≥2 of them) and 'open' (≥1). Cover the most important concepts from the plan and what the user actually engaged with.",
+      "EXACTLY 3-4 questions: 2 'mcq' + 1-2 'open'. Cover the most important concepts. Do NOT exceed 4.",
     ),
 });
 
@@ -76,15 +78,15 @@ function normalizeQuestion(raw: RawQuizQuestion): QuizQuestion {
       question: raw.question,
       options: raw.options,
       correctOption: raw.correctOption,
-      rubric: null,
+      rubric: null, // for mcq the LLM was told to send "n/a" — drop it
     };
   }
   return {
     id: raw.id,
     type: "open",
     question: raw.question,
-    options: null,
-    correctOption: null,
+    options: null, // empty array from LLM — drop it
+    correctOption: null, // dummy 0 from LLM — drop it
     rubric: raw.rubric,
   };
 }
@@ -116,10 +118,14 @@ export type QuizGrading = z.infer<typeof QuizGradingSchema>;
 
 const GENERATE_SYSTEM_PROMPT = `You are the end-of-week tutor of a self-learning app. The user finished a 7-day plan; your job is:
 
-1. Write a short, warm summary (3-6 paragraphs / bullets) of what they
-   worked on, what went well based on their ratings, and what to lean
-   into next week.
-2. Build a quiz: 3-6 questions mixing multiple-choice and open-ended,
+1. Write a short, warm summary as 'summaryParagraphs' — an ARRAY of
+   2-5 short paragraphs/bullets covering what they worked on, what
+   went well based on their ratings, and what to lean into next week.
+   CRITICAL: each entry is a SINGLE LINE of plain text. NEVER put a
+   newline character (\\n or a real line break) inside an entry — the
+   JSON parser will reject it. If you want a paragraph break, end the
+   current entry and start a new one in the array.
+2. Build a quiz: 3-4 questions mixing multiple-choice and open-ended,
    probing the most important ideas from their plan. The mix MUST
    include at least 2 'mcq' and at least 1 'open' question.
 
@@ -135,7 +141,10 @@ Style:
 - Match the user's input language (the plan's topic_summary is the
   best signal).
 - Concrete > abstract. Reference actual material titles when useful.
-- Don't over-praise; calibrate tone to the rating signal.`;
+- Don't over-praise; calibrate tone to the rating signal.
+
+Output: return a single valid JSON object matching the schema above.
+No surrounding prose, no markdown fences.`;
 
 export interface GenerateSummaryInput {
   topicSummary: string;
@@ -185,11 +194,16 @@ export async function generateWeeklySummary(
   const raw = await invokeStructured(userPrompt, WeeklySummaryGenSchema, {
     system: GENERATE_SYSTEM_PROMPT,
     temperature: options.temperature ?? 0.5,
+    maxTokens: options.maxTokens ?? 4000,
     ...options,
   });
 
   return {
-    summaryMarkdown: raw.summaryMarkdown,
+    // Llama emits literal newline bytes inside JSON strings, which violates
+    // the JSON spec and Groq's tool-call validator rejects with a generic
+    // "Failed to call a function" error. Asking for an array of single-line
+    // paragraphs sidesteps the issue; we re-join them on this side.
+    summaryMarkdown: raw.summaryParagraphs.join("\n\n"),
     quiz: raw.quiz.map(normalizeQuestion),
   };
 }
@@ -241,6 +255,8 @@ export async function gradeQuizAnswers(
   return invokeStructured(lines.join("\n"), QuizGradingSchema, {
     system: GRADE_SYSTEM_PROMPT,
     temperature: options.temperature ?? 0.2,
+    // Per-question feedback for 3-6 questions can total ~1-2k tokens.
+    maxTokens: options.maxTokens ?? 2500,
     ...options,
   });
 }

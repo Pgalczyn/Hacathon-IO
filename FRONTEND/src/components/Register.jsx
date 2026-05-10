@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
+import API_URL from "../api.js";
 
 const Register = () => {
     const [name, setName] = useState('');
@@ -23,7 +24,7 @@ const Register = () => {
             surname: surname
         }
         try {
-            const response = await fetch('http://localhost:3000/addUser', {
+            const response = await fetch(`${API_URL}/addUser`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -100,12 +101,27 @@ const Register = () => {
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+
                     />
+                    <div className="ps-1" style={{ minHeight: "20px" }}>
+                        {password.length > 0 && password.length < 8 ? (
+                            <small className="text-danger fw-bold">
+                                {8 - password.length} more {8 - password.length === 1 ? 'character' : 'characters'} needed
+                            </small>
+                        ) : password.length >= 8 ? (
+                            <small className="text-success fw-bold">
+                                Password is long enough ✓
+                            </small>
+                        ) : (
+                            <small className="text-muted">Minimum 8 characters</small>
+                        )}
+                    </div>
                     <button type="submit" className="btn purple-btn btn-lg px-4">
                         Submit
                     </button>
                 </form>
             </div>
+
         </div>
     );
 };
