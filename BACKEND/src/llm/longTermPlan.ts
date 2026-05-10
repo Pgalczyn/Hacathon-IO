@@ -40,10 +40,10 @@ export const MonthlyPlanSchema = z.object({
     ),
   tasks: z
     .array(LongTermTaskSchema)
-    .min(5)
-    .max(22)
+    .min(20)
+    .max(28)
     .describe(
-      "5-22 tasks distributed across the month's days. Spread them so the user has rest days.",
+      "REQUIRED: 20-25 tasks per month — the user expects something to do almost every day. Leave only 4-6 deliberate rest days per month. Fewer than 20 tasks is REJECTED. Don't be lazy — produce concrete daily activity.",
     ),
 });
 
@@ -84,11 +84,22 @@ Style:
 - Tasks are SHORT TITLES — 1-5 words. Examples: "Python Basics",
   "Web Dev Intro", "Data Structures", "Review", "Complementary Article",
   "Project: Todo App", "OOP Concepts".
-- Spread tasks across days. Not every day needs a task — leave rest /
-  buffer days. Aim for 12-18 tasks per month for someone with ~30-60
-  min/day.
-- Days mostly hold 1 task; occasionally 2 if topics complement each
-  other.
+
+Quantity (NON-NEGOTIABLE — the schema rejects anything below 20):
+- Target: 20-25 tasks PER MONTH. Almost every day has something.
+- Plan in 4-6 deliberate rest days per month — no more.
+- ANYTHING UNDER 20 TASKS WILL BE REJECTED by the schema validator.
+  Don't try to be minimal — the user has already committed to daily
+  practice. Default to 22.
+- Days mostly hold 1 task; pair 2 short tasks on a single day only
+  if they complement each other (e.g., a video + its companion
+  exercise).
+- Spread evenly across the month — don't dump everything in week 1.
+- For inspiration on how to fill 20+ days: include intro days, deep
+  dives, paired practice/exercise, "review week N", project
+  milestones, complementary articles, breakdown of subtopics.
+
+Language:
 - Match the user's input language for theme labels. Task titles can
   stay in English when the topic is technical (people Google English
   terms anyway).
