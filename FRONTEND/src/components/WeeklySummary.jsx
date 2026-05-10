@@ -276,7 +276,15 @@ const WeeklySummary = () => {
           </button>
 
           <div className="mt-3 small">
-            <Link to="/plan" className="auth-link">
+            <Link
+              to="/plan"
+              className="auth-link"
+              style={{
+                color: "#6f42c1",
+                fontWeight: 600,
+                textDecoration: "none",
+              }}
+            >
               Back to plan
             </Link>
           </div>

@@ -6,69 +6,69 @@ import { Link } from "react-router-dom";
 import { useAuth } from "./AuthContext.jsx";
 
 const Home = () => {
-    const { user, loading } = useAuth();
-    if (loading) {
-        return <div className="text-center py-5">Loading...</div>;
-    }
+  const { user, loading } = useAuth();
+  if (loading) {
+    return <div className="text-center py-5">Loading...</div>;
+  }
 
-    if (!user) {
-        return (
-            <div className="main-wrapper w-100" style={{ minHeight: "auto", display: "block" }}>
-                <header className="d-flex flex-column align-items-center py-5">
-                    <img
-                        src={welcomeButton}
-                        style={{
-                            borderRadius: "20px",
-                            width: "500px",
-                            height: "auto",
-                            display: "block"
-                        }}
-                        alt="Welcome"
-                    />
-                    <Link to="/login" style={{ textDecoration: "none" }}>
-                        <p style={{
-                            color: "#6f42c1",
-                            marginTop: "15px",
-                            fontWeight: "bold",
-                            cursor: "pointer"
-                        }}>
-                            Please log in to see your plans.
-                        </p>
-                    </Link>
-                </header>
-            </div>
-        );
-    }
-
+  if (!user) {
     return (
-        <div className="home-page">
-            {/* HERO */}
-            <header className="home-hero">
-                <div className="home-hero-content text-center py-5 bg-purple text-white">
-                    <h1>Your Learning Plan</h1>
-                    <p>
-                        Stay consistent with your daily tasks and explore curated materials
-                        tailored to your goals.
-                    </p>
-                </div>
+      <>
+        {/* <header className="d-flex flex-column align-items-center py-5"> */}
+        <header className="home-hero w-100 rounded-4">
+          <div className="home-hero-content text-center py-5 text-white">
+            <h1>Welcome!</h1>
+            <Link to="/login" style={{ textDecoration: "none" }}>
+              <p
+                style={{
+                  color: "rgba(255,255,255,0.8)",
+                  marginTop: "15px",
+                  fontWeight: 500,
+                }}
+              >
+                Please log in to see your plans.
+              </p>
+            </Link>
+          </div>
 
-                {/* decorative glows */}
-                <div className="home-glow home-glow-right" />
-                <div className="home-glow home-glow-left" />
-            </header>
-
-            {/* CONTENT */}
-            <main className="home-main container">
-                <section className="home-section mb-5">
-                    <DayView />
-                </section>
-
-                <section className="home-section">
-                    <RecommendedMaterials />
-                </section>
-            </main>
-        </div>
+          {/* decorative glows */}
+          <div className="home-glow home-glow-right" />
+          <div className="home-glow home-glow-left" />
+          {/* </header> */}
+        </header>
+      </>
     );
+  }
+
+  return (
+    <div className="home-page">
+      {/* HERO */}
+      <header className="home-hero">
+        <div className="home-hero-content text-center py-5 text-white">
+          <h1>Your Learning Plan</h1>
+          <p>
+            Stay consistent with your daily tasks and explore curated materials
+            tailored to your goals.
+          </p>
+        </div>
+
+        {/* decorative glows */}
+        <div className="home-glow home-glow-right" />
+        <div className="home-glow home-glow-left" />
+      </header>
+
+      {/* CONTENT */}
+      <main className="home-main container">
+        <section className="home-section mb-5">
+          <DayView />
+        </section>
+
+        <section className="home-section">
+          <RecommendedMaterials />
+        </section>
+      </main>
+    </div>
+  );
 };
 
 export default Home;

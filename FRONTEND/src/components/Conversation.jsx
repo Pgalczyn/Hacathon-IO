@@ -260,10 +260,7 @@ const Conversation = () => {
       </div>
 
       <div className="text-center small">
-        <Link
-          to="/plan"
-          className="auth-link small border-0 bg-transparent p-0"
-        >
+        <Link to="/plan" className="auth-link">
           Back to plan
         </Link>
       </div>
