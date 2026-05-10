@@ -40,10 +40,10 @@ export const MonthlyPlanSchema = z.object({
     ),
   tasks: z
     .array(LongTermTaskSchema)
-    .min(20)
+    .min(12)
     .max(28)
     .describe(
-      "REQUIRED: 20-25 tasks per month — the user expects something to do almost every day. Leave only 4-6 deliberate rest days per month. Fewer than 20 tasks is REJECTED. Don't be lazy — produce concrete daily activity.",
+      "Target 18-22 tasks per month — almost every day has something. The schema floor is 12 (so retry loops don't blow the LLM-call latency budget), but treat 20 as the goal. Leave 4-6 deliberate rest days, no more.",
     ),
 });
 
@@ -169,6 +169,10 @@ export async function generateLongTermPlan(
   return invokeStructured(userPrompt, LongTermPlanGenSchema, {
     system: SYSTEM_PROMPT,
     temperature: options.temperature ?? 0.5,
+    // Yearly plan = ~12 months × ~18 tasks × ~12 tokens + overhead = ~3-5k
+    // tokens of structured output. Default ChatGroq cap can truncate the
+    // tool-call JSON mid-month and Groq's validator rejects partial objects.
+    maxTokens: options.maxTokens ?? 8000,
     ...options,
   });
 }

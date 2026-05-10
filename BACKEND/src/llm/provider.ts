@@ -9,12 +9,16 @@ export interface LLMConfig {
   model?: string;
   temperature?: number;
   apiKey?: string;
+  /** Cap on output tokens. Bump for long structured outputs (yearly plan,
+   *  big quizzes) so the JSON doesn't get truncated mid-object. */
+  maxTokens?: number;
 }
 
 export function createLLM(config: LLMConfig = {}): BaseChatModel {
   const provider =
     config.provider ?? (process.env.LLM_PROVIDER as LLMProvider | undefined) ?? "groq";
   const temperature = config.temperature ?? 0;
+  const maxTokens = config.maxTokens;
 
   switch (provider) {
     case "groq": {
@@ -24,6 +28,7 @@ export function createLLM(config: LLMConfig = {}): BaseChatModel {
         apiKey,
         model: config.model ?? process.env.LLM_MODEL ?? "llama-3.3-70b-versatile",
         temperature,
+        ...(maxTokens !== undefined ? { maxTokens } : {}),
       });
     }
     case "anthropic": {
@@ -33,6 +38,7 @@ export function createLLM(config: LLMConfig = {}): BaseChatModel {
         apiKey,
         model: config.model ?? process.env.LLM_MODEL ?? "claude-sonnet-4-6",
         temperature,
+        ...(maxTokens !== undefined ? { maxTokens } : {}),
       });
     }
     default:

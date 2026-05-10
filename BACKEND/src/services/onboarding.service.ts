@@ -27,21 +27,24 @@ export class OnboardingService {
    * when a userId is supplied, persists the result.
    */
   async run(input: OnboardingInput, options: RunOptions = {}): Promise<OnboardingResponse> {
+    console.log("[onboarding] start, userId:", options.userId ?? "(anon)");
     let learnerContext: string | undefined;
     if (options.userId) {
       try {
         const ctx = await recommendationService.buildPromptContext(options.userId);
         learnerContext = ctx ?? undefined;
+        console.log("[onboarding] insights built, length:", ctx?.length ?? 0);
       } catch (err) {
-        // Insights are best-effort: a Mongo hiccup shouldn't kill plan generation.
         console.warn("Failed to build learner insights:", err instanceof Error ? err.message : err);
       }
     }
 
+    console.log("[onboarding] calling LLM...");
     const planResponse = await generateWeeklyPlan(
       input,
       learnerContext ? { learnerContext } : {},
     );
+    console.log("[onboarding] LLM done, accepted:", planResponse.validation.accepted);
 
     if (!planResponse.validation.accepted || !planResponse.plan) {
       return {
