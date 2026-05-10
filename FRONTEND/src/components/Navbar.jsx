@@ -66,6 +66,11 @@ const Navbar = () => {
                 Match
               </Link>
             </li>
+            <li className="nav-item">
+              <Link to="/conversation" className="btn navbar-btn btn-lg px-4">
+                Tutor
+              </Link>
+            </li>
           </ul>
 
           <div className="d-flex gap-2 ms-auto">
