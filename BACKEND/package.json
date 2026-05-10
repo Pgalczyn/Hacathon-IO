@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "main": "dist/llm/index.js",
   "types": "dist/llm/index.d.ts",
   "scripts": {
