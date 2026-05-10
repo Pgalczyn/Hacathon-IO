@@ -68,7 +68,14 @@ a.auth-link:hover {
   text-decoration: underline;
   transform: translateX(2px);
 }
-
+.nav-greeting-pill {
+  background: rgba(159, 70, 237, 0.1);
+  color: #6f42c1;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
 .auth-link:hover {
   color: #4c2a91;
   text-decoration: underline;
@@ -97,7 +104,6 @@ a.auth-link:hover {
 
 /* ===== PROFILE PAGE LAYOUT ===== */
 
- Center the whole profile page
 .auth-switch {
   display: flex !important;
   justify-content: center !important;
@@ -128,7 +134,7 @@ a.auth-link:hover {
 .auth-switch .profile-avatar {
   width: 72px;
   height: 72px;
-  background: #9f46ed;                /* your purple */
+  background: #9f46ed; /* your purple */
   color: white;
   font-size: 28px;
   font-weight: 600;
@@ -142,11 +148,11 @@ a.auth-link:hover {
 .auth-switch .profile-header h2 {
   margin: 0 0 4px;
   font-size: 24px;
-  color: #0f1364;                     /* your dark navy */
+  color: #0f1364; /* your dark navy */
 }
 
 .auth-switch .profile-email {
-  color: #6f42c1;                     /* purple */
+  color: #6f42c1; /* purple */
   font-size: 14px;
   margin: 4px 0 8px;
 }
@@ -154,8 +160,8 @@ a.auth-link:hover {
 .auth-switch .profile-status {
   display: inline-block;
   padding: 4px 12px;
-  background: #f1e4ff;               /* light purple bg */
-  color: #6f42c1;                     /* purple text */
+  background: #f1e4ff; /* light purple bg */
+  color: #6f42c1; /* purple text */
   border-radius: 20px;
   font-size: 13px;
   font-weight: 500;
@@ -168,7 +174,7 @@ a.auth-link:hover {
 
 .auth-switch .profile-section h3 {
   font-size: 18px;
-  color: #4f5295;                     /* muted purple */
+  color: #4f5295; /* muted purple */
   border-bottom: 2px solid #f1e4ff;
   padding-bottom: 6px;
   margin-bottom: 15px;
@@ -183,15 +189,15 @@ a.auth-link:hover {
 
 .auth-switch .detail-item label {
   font-weight: 500;
-  color: #4f5295;                     /* muted purple */
+  color: #4f5295; /* muted purple */
   display: block;
   margin-bottom: 4px;
 }
 
 .auth-switch .detail-item p {
-  color: #0f1364;                     /* dark navy */
+  color: #0f1364; /* dark navy */
   margin: 0;
-  background: #faf5ff;                /* very light purple */
+  background: #faf5ff; /* very light purple */
   padding: 6px 12px;
   border-radius: 8px;
   font-size: 14px;
@@ -207,7 +213,7 @@ a.auth-link:hover {
 .auth-switch .pref-item {
   display: flex;
   flex-direction: column;
-  background: #faf5ff;                /* very light purple */
+  background: #faf5ff; /* very light purple */
   border-radius: 12px;
   padding: 16px;
   border: 1px solid #f1e4ff;
@@ -226,7 +232,7 @@ a.auth-link:hover {
   padding: 8px 12px;
   border-radius: 8px;
   font-size: 15px;
-  border: 1px solid #e9d5ff;          /* soft purple border */
+  border: 1px solid #e9d5ff; /* soft purple border */
 }
 
 /* Statistics grid */
@@ -242,7 +248,9 @@ a.auth-link:hover {
   padding: 20px 16px;
   text-align: center;
   border: 1px solid #f1e4ff;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .auth-switch .stat-item:hover {
@@ -260,7 +268,7 @@ a.auth-link:hover {
   display: block;
   font-size: 28px;
   font-weight: 700;
-  color: #9f46ed;                     /* purple accent */
+  color: #9f46ed; /* purple accent */
 }
 
 .auth-switch .stat-label {
@@ -305,7 +313,12 @@ a.auth-link:hover {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(15, 19, 100, 0.4); /* Navy-tinted semi-transparent background */
+  background: rgba(
+    15,
+    19,
+    100,
+    0.4
+  ); /* Navy-tinted semi-transparent background */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -325,8 +338,14 @@ a.auth-link:hover {
 }
 
 @keyframes modalFadeIn {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modal-content h3 {

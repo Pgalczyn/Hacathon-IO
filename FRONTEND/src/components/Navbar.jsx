@@ -82,7 +82,7 @@ const Navbar = () => {
           <div className="d-flex gap-2 ms-auto align-items-center">
             {isLoggedIn ? (
               <>
-                <span className="text-muted small me-2 d-none d-lg-inline">
+                <span className="me-2 d-none d-lg-inline nav-greeting">
                   Hi, {user.login}
                 </span>
                 <Link to="/myprofile" className="btn purple-btn btn-lg px-4">
