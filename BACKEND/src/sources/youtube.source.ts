@@ -13,14 +13,19 @@ export class YouTubeSource implements MaterialSource<string, VideoResult[]> {
   readonly name = "youtube";
 
   constructor(
-    private readonly apiKey: string | undefined = process.env.YOUTUBE_API_KEY,
+    private readonly apiKeyOverride: string | undefined = undefined,
     private readonly maxResults: number = 3,
   ) {}
 
   async fetch(query: string): Promise<VideoResult[]> {
-    if (!query || !this.apiKey) return [];
+    // Read the API key lazily here — `sources/index.ts` instantiates this
+    // class at module import time, which (under ESM hoisting) runs before
+    // server.ts loads .env. Reading process.env in fetch() avoids that
+    // race so the key is picked up correctly on the first request.
+    const apiKey = this.apiKeyOverride ?? process.env.YOUTUBE_API_KEY;
+    if (!query || !apiKey) return [];
     try {
-      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=${this.maxResults}&key=${this.apiKey}`;
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=${this.maxResults}&key=${apiKey}`;
       const { data } = await axios.get<{ items: YouTubeItem[] }>(url);
       return data.items.map((item) => ({
         videoId: item.id.videoId,
