@@ -79,8 +79,10 @@ these categories:
 - unclear: the goal is too vague, contradictory, or nonsensical to
   plan against (e.g. "I want to learn everything").
 
-When you reject, write a SHORT, RESPECTFUL explanation in the user's
-language. Do not lecture. Do not moralize. One or two sentences max.
+When you reject, write a SHORT, RESPECTFUL explanation in ENGLISH
+(rejection_reason is ALWAYS in English regardless of the goal's
+input language). Do not lecture. Do not moralize. One or two
+sentences max.
 
 BORDERLINE TIE-BREAKER: when a goal could go either way, REJECT it.
 The user can always rephrase as a serious skill (e.g. "be a princess"
@@ -158,11 +160,12 @@ LEARNER PROFILE (when present):
   * Recommend MORE in the style of "recently loved" items.
 - If no LEARNER PROFILE is present, plan from scratch as usual.
 
-Language: match the language of the user's goal text. If the user
-writes in Polish, every string in your output (descriptions,
-why_this, rejection_reason, weekly_focus, topic_summary) must be in
-Polish. Resource titles stay in their original language — do not
-translate "Atomic Habits" or "CS50" into Polish.
+Language: match the language of the user's goal text for plan
+content (descriptions, why_this, weekly_focus, topic_summary). If
+the user writes in Polish, those fields are in Polish. EXCEPTION:
+rejection_reason is ALWAYS in English no matter what language the
+goal is in. Resource titles stay in their original language — do
+not translate "Atomic Habits" or "CS50".
 
 Tone: encouraging, concrete, no fluff, no moralizing.`;
 
